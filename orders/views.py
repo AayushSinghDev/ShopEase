@@ -196,10 +196,6 @@ def place_order(request):
             grand_total=grand_total, payment_method='cod', payment_id=None,
         )
         _post_order_cleanup(request, discount_code_str)
-        # Email notifications
-        from orders.email_utils import send_order_confirmation_email, send_seller_new_order_email
-        send_order_confirmation_email(order)
-        send_seller_new_order_email(order)
         messages.success(request, f'Order #{order.pk} placed successfully!')
         return redirect('orders:confirmation', pk=order.pk)
 
@@ -283,11 +279,6 @@ def razorpay_callback(request):
     if 'pending_order' in request.session:
         del request.session['pending_order']
 
-    # Email notifications
-    from orders.email_utils import send_order_confirmation_email, send_seller_new_order_email
-    send_order_confirmation_email(order)
-    send_seller_new_order_email(order)
-
     return JsonResponse({'success': True, 'order_id': order.pk})
 
 
@@ -319,11 +310,6 @@ def _create_order(*, customer, address, cart_items, subtotal, discount_amount,
         )
         product.stock = max(0, product.stock - qty)
         product.save()
-        # Low stock alert
-        from products.models import LOW_STOCK_THRESHOLD
-        from products.stock_utils import send_low_stock_alert_email
-        if product.stock <= LOW_STOCK_THRESHOLD:
-            send_low_stock_alert_email(product)
     return order
 
 
@@ -412,18 +398,3 @@ def delete_address(request, pk):
     messages.success(request, 'Address removed.')
     next_url = request.POST.get('next', '/orders/checkout/')
     return redirect(next_url)
-
-
-def download_invoice(request, pk):
-    if request.session.get('user_role') != 'customer':
-        return redirect('/accounts/login/')
-
-    order = get_object_or_404(Order, pk=pk, customer_id=request.session['user_id'])
-
-    if order.status not in ('confirmed', 'shipped', 'delivered'):
-        messages.error(request, 'Invoice is only available for confirmed orders.')
-        return redirect('orders:order_detail', pk=pk)
-
-    from orders.pdf_utils import generate_invoice_pdf
-    return generate_invoice_pdf(order)
-

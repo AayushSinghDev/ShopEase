@@ -75,12 +75,12 @@ def register_view(request):
 
         if password != confirm_password:
             messages.error(request, 'Passwords do not match.')
-            return redirect('accounts:register')
+            return render(request, 'accounts/register.html')
 
         if role == 'customer':
             if Customer.objects.filter(email=email).exists():
                 messages.error(request, 'A customer with this email already exists.')
-                return redirect('accounts:register')
+                return render(request, 'accounts/register.html')
             user = Customer.objects.create(
                 name=name, email=email,
                 password=make_password(password), phone=phone
@@ -94,7 +94,7 @@ def register_view(request):
         elif role == 'seller':
             if Seller.objects.filter(email=email).exists():
                 messages.error(request, 'A seller with this email already exists.')
-                return redirect('accounts:register')
+                return render(request, 'accounts/register.html')
             user = Seller.objects.create(
                 name=name, email=email,
                 password=make_password(password), phone=phone
@@ -201,15 +201,14 @@ def face_register(request):
     POST /accounts/face-register/
     Captures 30 face images via webcam, trains the LBPH model, and
     saves the face_data path to the Customer or Seller record.
-    Only works when ENABLE_FACE_RECOGNITION=True in settings.
-    """
-    from django.conf import settings as django_settings
-    if not getattr(django_settings, 'ENABLE_FACE_RECOGNITION', False):
-        return JsonResponse({
-            'success': False,
-            'message': 'Face recognition is disabled on this server. Please use password login.'
-        }, status=503)
 
+    Expects:
+        role    (str): 'customer' or 'seller'
+        user_id (int): ID of the user registering their face
+
+    Returns:
+        JSON: {success: bool, message: str}
+    """
     try:
         from . import face_utils
 
@@ -260,16 +259,15 @@ def face_register(request):
 def face_login(request):
     """
     POST /accounts/face-login/
-    Opens webcam, detects & recognizes the face using trained LBPH model.
-    Only works when ENABLE_FACE_RECOGNITION=True in settings.
-    """
-    from django.conf import settings as django_settings
-    if not getattr(django_settings, 'ENABLE_FACE_RECOGNITION', False):
-        return JsonResponse({
-            'success': False,
-            'message': 'Face recognition is disabled on this server. Please use password login.'
-        }, status=503)
+    Opens webcam, detects & recognizes the face using trained LBPH model,
+    sets session variables, and returns redirect URL on success.
 
+    Expects:
+        role (str): 'customer' or 'seller'
+
+    Returns:
+        JSON: {success: bool, redirect_url: str (on success), message: str}
+    """
     try:
         from . import face_utils
 

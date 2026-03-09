@@ -1,43 +1,37 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
+*.so
 *.egg
 *.egg-info/
 dist/
 build/
-eggs/
-*.so
-
-# Virtual environment
-venv/
-env/
-.env
-.venv/
 
 # Django
-*.log
-local_settings.py
+*.sqlite3
 db.sqlite3
 staticfiles/
 media/
+*.log
 
-# Face data (sensitive, large)
-media/face_data/
-media/face_models/
+# Environment
+.env
+venv/
+env/
+.venv/
 
 # IDE
 .vscode/
 .idea/
 *.swp
-*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Secrets (never commit these)
-.env.local
-.env.production
+# Sensitive - DO NOT COMMIT
+ca.pem
+face_data/
+face_model/
+*.yml
+secrets.py

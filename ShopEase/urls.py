@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('products/', include('products.urls')),
-    path('orders/', include('orders.urls')),
+    path('orders/', include('orders.urls')),   # single include — no more cart/ duplicate
     path('seller/', include((seller_urls, 'seller'))),
     path('discount/', include('discounts.urls')),
     path('superadmin/', include('dashboard.urls')),
@@ -32,11 +32,6 @@ urlpatterns = [
     path('', product_views.home, name='home'),
 ]
 
-# Media files — development aur production dono mein
-# (Production mein Railway/Render pe media folder persist nahi hota,
-#  lekin uploaded images ke liye zaroor chahiye)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# Static files — sirf debug mode mein (production mein whitenoise handle karta hai)
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -29,9 +29,6 @@ def seller_dashboard(request):
 
     recent_orders = orders.order_by('-created_at')[:5]
 
-    from products.stock_utils import get_low_stock_products
-    low_stock_products = get_low_stock_products(seller=seller)
-
     return render(request, 'seller/dashboard.html', {
         'seller': seller,
         'total_products': total_products,
@@ -39,8 +36,6 @@ def seller_dashboard(request):
         'total_earnings': total_earnings,
         'recent_orders': recent_orders,
         'products': products[:4],
-        'low_stock_products': low_stock_products,
-        'low_stock_count': low_stock_products.count(),
     })
 
 
@@ -205,8 +200,6 @@ def update_order_status(request, pk):
         if new_status in valid_statuses:
             order.status = new_status
             order.save()
-            from orders.email_utils import send_order_status_update_email
-            send_order_status_update_email(order)
             messages.success(request, f'Order #{order.pk} status updated to {new_status}.')
 
     return redirect('/seller/orders/')
