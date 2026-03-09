@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}My Wishlist — ShopEase{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header { background: #0d1b3e; padding: 40px 0 30px; color: #fff; }
+  .page-header h1 { font-size: 2rem; font-weight: 900; }
+  .badge-count { background: #f5a623; color: #0d1b3e; border-radius: 20px; padding: 4px 14px; font-weight: 800; font-size: 0.9rem; }
+  .wishlist-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+  .wishlist-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+  .wishlist-card img { width: 100%; height: 200px; object-fit: cover; }
+  .wishlist-card .no-img { width: 100%; height: 200px; background: #f0f4ff; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #c0cce0; }
+  .card-body-custom { padding: 18px; }
+  .card-title { font-weight: 800; color: #0d1b3e; font-size: 1rem; margin-bottom: 6px; }
+  .card-price { font-size: 1.25rem; font-weight: 900; color: #f5a623; margin-bottom: 14px; }
+  .btn-cart { background: #0d1b3e; color: #f5a623; border: none; border-radius: 10px; padding: 9px 0; font-weight: 700; font-size: 0.9rem; width: 100%; cursor: pointer; transition: all 0.2s; margin-bottom: 8px; }
+  .btn-cart:hover { background: #f5a623; color: #0d1b3e; }
+  .btn-remove-wish { background: transparent; color: #dc3545; border: 2px solid #dc3545; border-radius: 10px; padding: 7px 0; font-weight: 700; font-size: 0.85rem; width: 100%; cursor: pointer; transition: all 0.2s; }
+  .btn-remove-wish:hover { background: #dc3545; color: #fff; }
+  .empty-state { text-align: center; padding: 80px 20px; }
+  .empty-state i { font-size: 5rem; color: #dde2f0; }
+  .empty-state h3 { color: #0d1b3e; font-weight: 800; margin: 20px 0 10px; }
+  .empty-state p { color: #888; margin-bottom: 24px; }
+  .btn-browse { background: #0d1b3e; color: #f5a623; border: none; border-radius: 12px; padding: 12px 30px; font-weight: 700; text-decoration: none; display: inline-block; transition: all 0.2s; }
+  .btn-browse:hover { background: #f5a623; color: #0d1b3e; }
+  .action-toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: none; }
+  .toast-inner { background: #0d1b3e; color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <h1><i class="bi bi-heart-fill me-2" style="color:#f5a623"></i>My Wishlist</h1>
+      <span class="badge-count">{{ wishlist_items.count }} item{{ wishlist_items.count|pluralize }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="container py-5">
+  {% if wishlist_items %}
+  <div class="row g-4">
+    {% for item in wishlist_items %}
+    <div class="col-sm-6 col-md-4 col-lg-3" id="wish-card-{{ item.product.id }}">
+      <div class="wishlist-card">
+        <a href="{% url 'products:product_detail' item.product.pk %}">
+          {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          {% else %}
+            <div class="no-img"><i class="bi bi-image"></i></div>
+          {% endif %}
+        </a>
+        <div class="card-body-custom">
+          <div class="card-title">
+            <a href="{% url 'products:product_detail' item.product.pk %}" style="color:inherit;text-decoration:none;">{{ item.product.name }}</a>
+          </div>
+          <div class="card-price">₹{{ item.product.price }}</div>
+          {% if item.product.stock > 0 %}
+          <form action="/orders/cart/add/{{ item.product.id }}/" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn-cart"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+          </form>
+          {% else %}
+          <button class="btn-cart" disabled style="opacity:0.5;cursor:not-allowed;"><i class="bi bi-x-circle me-1"></i>Out of Stock</button>
+          {% endif %}
+          <button class="btn-remove-wish" onclick="removeFromWishlist({{ item.product.id }})">
+            <i class="bi bi-heartbreak me-1"></i>Remove
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-heart"></i>
+    <h3>Your wishlist is empty</h3>
+    <p>Start browsing and save products you love!</p>
+    <a href="{% url 'products:shop' %}" class="btn-browse"><i class="bi bi-shop me-2"></i>Start Browsing</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="action-toast" id="action-toast">
+  <div class="toast-inner"><i class="bi bi-check-circle-fill me-2" style="color:#f5a623"></i><span id="toast-msg">Done</span></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCsrfToken() {
+  const name = 'csrftoken';
+  for (let c of document.cookie.split(';')) {
+    c = c.trim();
+    if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+  }
+  return '';
+}
+function showToast(msg) {
+  const t = document.getElementById('action-toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+function removeFromWishlist(productId) {
+  fetch(`/products/wishlist/remove/${productId}/`, {
+    method: 'POST', headers: {'X-CSRFToken': getCsrfToken()}
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      const card = document.getElementById('wish-card-' + productId);
+      if (card) card.remove();
+      showToast('Removed from wishlist');
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Super Admin{% endblock %} — ShopEase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy2: #12223f;
+      --navy3: #1a3155;
+      --orange: #f97316;
+      --orange-light: #fb923c;
+      --sidebar-w: 250px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", sans-serif; background: #f1f5f9; display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy);
+      min-height: 100vh;
+      position: fixed;
+      top: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    }
+    .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+    .sidebar-brand h4 {
+      color: var(--orange);
+      font-weight: 800;
+      font-size: 1.3rem;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    .sidebar-brand span {
+      color: rgba(255,255,255,0.45);
+      font-size: 0.72rem;
+      display: block;
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .nav-item { display: block; }
+    .nav-link-admin {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 22px;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+    .nav-link-admin i { font-size: 1.1rem; width: 20px; text-align: center; }
+    .nav-link-admin:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.06);
+      border-left-color: var(--orange);
+    }
+    .nav-link-admin.active {
+      color: var(--orange);
+      background: rgba(249,115,22,0.1);
+      border-left-color: var(--orange);
+      font-weight: 700;
+    }
+    .nav-section-title {
+      padding: 12px 22px 4px;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-footer a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 8px 0;
+      transition: color 0.2s;
+    }
+    .sidebar-footer a:hover { color: #ff6b6b; }
+
+    /* ── Main Content ── */
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .topbar {
+      background: #fff;
+      padding: 0 28px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+    .topbar-title {
+      font-weight: 700;
+      color: var(--navy);
+      font-size: 1.05rem;
+    }
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #555;
+      font-size: 0.88rem;
+    }
+    .topbar-user .avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--navy);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--orange);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    .page-content { padding: 28px; flex: 1; }
+
+    /* ── Shared UI ── */
+    .stat-card {
+      border-radius: 14px;
+      padding: 22px 24px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .stat-card .icon-bg {
+      position: absolute;
+      right: -10px;
+      bottom: -10px;
+      font-size: 5rem;
+      opacity: 0.12;
+    }
+    .stat-card h3 { font-size: 2rem; font-weight: 800; margin: 6px 0 2px; }
+    .stat-card p { font-size: 0.8rem; opacity: 0.8; margin: 0; }
+    .stat-card small { font-size: 0.72rem; opacity: 0.65; }
+
+    .card-admin {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border: none;
+    }
+    .card-admin .card-header-admin {
+      padding: 18px 22px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-admin .card-header-admin h5 {
+      margin: 0;
+      font-weight: 700;
+      color: var(--navy);
+      font-size: 1rem;
+    }
+    .table-admin { font-size: 0.875rem; }
+    .table-admin thead th {
+      background: #f8faff;
+      color: var(--navy);
+      font-weight: 700;
+      border-bottom: 2px solid #e8eef8;
+      padding: 12px 16px;
+      white-space: nowrap;
+    }
+    .table-admin tbody td { padding: 12px 16px; vertical-align: middle; }
+    .table-admin tbody tr:hover { background: #fafbff; }
+
+    .btn-orange {
+      background: var(--orange);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .btn-orange:hover { background: var(--orange-light); transform: translateY(-1px); }
+    .btn-navy {
+      background: var(--navy);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .btn-navy:hover { background: var(--navy2); }
+
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .badge-pending   { background: #fff3cd; color: #856404; }
+    .badge-confirmed { background: #cff4fc; color: #0c5460; }
+    .badge-shipped   { background: #d1ecf1; color: #0c5460; }
+    .badge-delivered { background: #d4edda; color: #155724; }
+    .badge-cancelled { background: #f8d7da; color: #721c24; }
+    .badge-approved  { background: #d4edda; color: #155724; }
+
+    .alert-custom { border-radius: 10px; font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h4><i class="bi bi-bag-heart-fill"></i> ShopEase</h4>
+    <span>Super Admin Panel</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">Main</div>
+    <a href="/superadmin/" class="nav-link-admin {% block nav_home %}{% endblock %}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <div class="nav-section-title">Management</div>
+    <a href="/superadmin/customers/" class="nav-link-admin {% block nav_customers %}{% endblock %}">
+      <i class="bi bi-people-fill"></i> Customers
+    </a>
+    <a href="/superadmin/sellers/" class="nav-link-admin {% block nav_sellers %}{% endblock %}">
+      <i class="bi bi-shop-window"></i> Sellers
+    </a>
+    <a href="/superadmin/products/" class="nav-link-admin {% block nav_products %}{% endblock %}">
+      <i class="bi bi-box-seam-fill"></i> Products
+    </a>
+    <a href="/superadmin/orders/" class="nav-link-admin {% block nav_orders %}{% endblock %}">
+      <i class="bi bi-receipt"></i> Orders
+    </a>
+    <a href="/superadmin/discounts/" class="nav-link-admin {% block nav_discounts %}{% endblock %}">
+      <i class="bi bi-ticket-perforated-fill"></i> Discounts
+    </a>
+
+    <div class="nav-section-title">Insights</div>
+    <a href="/superadmin/analytics/" class="nav-link-admin {% block nav_analytics %}{% endblock %}">
+      <i class="bi bi-bar-chart-line-fill"></i> Analytics
+    </a>
+    <a href="/superadmin/banners/" class="nav-link-admin {% block nav_banners %}{% endblock %}">
+      <i class="bi bi-image-fill"></i> Banners
+    </a>
+    <a href="/chatbot/logs/" class="nav-link-admin {% block nav_chatbot %}{% endblock %}">
+      <i class="bi bi-chat-left-text-fill"></i> Chat Logs
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/accounts/logout/">
+      <i class="bi bi-box-arrow-left"></i> Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ── Main Wrap ── -->
+<div class="main-wrap">
+  <header class="topbar">
+    <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+    <div class="topbar-user">
+      <div class="avatar">A</div>
+      <div>
+        <div style="font-weight:700;color:#0a1628;">{{ name }}</div>
+        <div style="font-size:0.72rem;color:#888;">Super Administrator</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show mb-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

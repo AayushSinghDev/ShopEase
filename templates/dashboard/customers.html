@@ -1,0 +1,66 @@
+{% extends 'dashboard/base_admin.html' %}
+
+{% block title %}Customers{% endblock %}
+{% block page_title %}👥 Manage Customers{% endblock %}
+{% block nav_customers %}active{% endblock %}
+
+{% block content %}
+<div class="card-admin">
+  <div class="card-header-admin">
+    <h5><i class="bi bi-people-fill me-2 text-primary"></i>All Customers <span class="badge bg-secondary ms-1">{{ customers|length }}</span></h5>
+    <form method="GET" class="d-flex gap-2">
+      <input type="text" name="search" value="{{ search }}" placeholder="Search by name or email..."
+             class="form-control form-control-sm" style="width:260px;border-radius:8px;border:2px solid #e0e7ff;" />
+      <button type="submit" class="btn-navy" style="padding:6px 16px;border-radius:8px;">Search</button>
+      {% if search %}
+      <a href="/superadmin/customers/" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-admin table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Face Login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+        <tr>
+          <td><span class="text-muted">#{{ customer.pk }}</span></td>
+          <td><strong>{{ customer.name }}</strong></td>
+          <td>{{ customer.email }}</td>
+          <td>{{ customer.phone }}</td>
+          <td>
+            {% if customer.face_data %}
+            <span class="status-badge badge-delivered"><i class="bi bi-camera-fill me-1"></i>Enabled</span>
+            {% else %}
+            <span class="status-badge badge-cancelled">Not set</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="/superadmin/customers/delete/{{ customer.pk }}/"
+                  onsubmit="return confirm('Delete customer {{ customer.name }}? This cannot be undone.')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger" style="border-radius:7px;font-size:0.78rem;padding:4px 12px;">
+                <i class="bi bi-trash3-fill"></i> Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-5">
+          <i class="bi bi-people fs-1 d-block mb-2"></i>
+          No customers found{% if search %} for "{{ search }}"{% endif %}.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

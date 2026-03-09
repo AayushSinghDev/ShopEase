@@ -1,0 +1,83 @@
+{% extends 'dashboard/base_admin.html' %}
+
+{% block title %}Discounts{% endblock %}
+{% block page_title %}🎟️ Manage Discount Codes{% endblock %}
+{% block nav_discounts %}active{% endblock %}
+
+{% block content %}
+<div class="card-admin">
+  <div class="card-header-admin">
+    <h5><i class="bi bi-ticket-perforated-fill me-2 text-danger"></i>All Discount Codes <span class="badge bg-secondary ms-1">{{ discounts|length }}</span></h5>
+    <span style="font-size:0.8rem;color:#888;">Sellers create these — Admin can view &amp; delete</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-admin table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Type</th>
+          <th>Value</th>
+          <th>Min Order</th>
+          <th>Expiry</th>
+          <th>Used / Limit</th>
+          <th>Active</th>
+          <th>Seller</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in discounts %}
+        <tr>
+          <td>
+            <code style="background:#f0f4ff;color:#0a1628;padding:3px 8px;border-radius:6px;font-weight:700;font-size:0.85rem;">
+              {{ d.code }}
+            </code>
+          </td>
+          <td>
+            {% if d.discount_type == 'percentage' %}
+            <span class="status-badge badge-confirmed">% Percentage</span>
+            {% else %}
+            <span class="status-badge badge-pending">₹ Flat</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if d.discount_type == 'percentage' %}{{ d.discount_value }}%
+            {% else %}₹{{ d.discount_value }}{% endif %}
+          </td>
+          <td>₹{{ d.minimum_order_value }}</td>
+          <td>
+            <span style="font-size:0.82rem;">{{ d.expiry_date }}</span>
+          </td>
+          <td>
+            <span class="{% if d.used_count >= d.usage_limit %}text-danger fw-bold{% endif %}">
+              {{ d.used_count }} / {{ d.usage_limit }}
+            </span>
+          </td>
+          <td>
+            {% if d.is_active %}
+            <span class="status-badge badge-delivered">Active</span>
+            {% else %}
+            <span class="status-badge badge-cancelled">Inactive</span>
+            {% endif %}
+          </td>
+          <td><span style="font-size:0.8rem;">{{ d.created_by.name }}</span></td>
+          <td>
+            <form method="POST" action="/superadmin/discounts/delete/{{ d.pk }}/"
+                  onsubmit="return confirm('Delete discount code &quot;{{ d.code }}&quot;?')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger" style="border-radius:7px;font-size:0.78rem;padding:4px 12px;">
+                <i class="bi bi-trash3-fill"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center text-muted py-5">
+          <i class="bi bi-ticket-perforated fs-1 d-block mb-2"></i>No discount codes yet.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

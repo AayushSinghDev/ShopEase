@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>New Order — ShopEase Seller</title></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+      <!-- HEADER -->
+      <tr>
+        <td style="background:#0d1b3e;border-radius:16px 16px 0 0;padding:28px 40px;text-align:center;">
+          <div style="font-size:1.6rem;font-weight:900;color:#f5a623;">🛍️ ShopEase</div>
+          <div style="color:rgba(255,255,255,0.7);font-size:0.85rem;margin-top:4px;">Seller Notifications</div>
+        </td>
+      </tr>
+
+      <!-- BODY -->
+      <tr>
+        <td style="background:#fff;padding:32px 40px;">
+          <div style="font-size:1.3rem;font-weight:900;color:#0d1b3e;margin-bottom:6px;">
+            🎉 New Order Received!
+          </div>
+          <div style="color:#666;font-size:0.92rem;margin-bottom:24px;">
+            Hi {{ seller.name }}, you have received a new order for your products.
+          </div>
+
+          <!-- Order Info -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4ff;border-radius:10px;padding:16px 20px;margin-bottom:22px;">
+            <tr>
+              <td style="color:#888;font-size:0.82rem;">Order ID</td>
+              <td style="color:#888;font-size:0.82rem;">Date</td>
+              <td style="color:#888;font-size:0.82rem;">Payment</td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:#0d1b3e;">#{{ order.pk }}</td>
+              <td style="font-weight:700;color:#0d1b3e;">{{ order.created_at|date:"d M Y" }}</td>
+              <td style="font-weight:700;color:#0d1b3e;">{{ order.get_payment_method_display }}</td>
+            </tr>
+          </table>
+
+          <!-- Your Items -->
+          <div style="font-weight:800;color:#0d1b3e;font-size:0.95rem;margin-bottom:12px;">Your Items in This Order</div>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+            <tr style="background:#0d1b3e;">
+              <td style="color:#f5a623;font-weight:700;font-size:0.78rem;padding:8px 12px;border-radius:6px 0 0 0;">PRODUCT</td>
+              <td style="color:#f5a623;font-weight:700;font-size:0.78rem;padding:8px 12px;text-align:center;">QTY</td>
+              <td style="color:#f5a623;font-weight:700;font-size:0.78rem;padding:8px 12px;text-align:right;border-radius:0 6px 0 0;">AMOUNT</td>
+            </tr>
+            {% for item in seller_items %}
+            <tr style="border-bottom:1px solid #f0f0f0;">
+              <td style="padding:10px 12px;font-weight:600;color:#333;font-size:0.88rem;">{{ item.product_name }}</td>
+              <td style="padding:10px 12px;text-align:center;color:#666;">x{{ item.quantity }}</td>
+              <td style="padding:10px 12px;text-align:right;font-weight:700;color:#0d1b3e;">₹{{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+
+          <!-- Delivery Info (minimal, privacy) -->
+          <div style="background:#fff3cd;border-radius:10px;padding:14px 18px;margin-top:20px;font-size:0.85rem;color:#856404;">
+            <strong>📍 Delivery City:</strong> {{ order.address.city }}, {{ order.address.state }}
+          </div>
+
+          <!-- CTA -->
+          <div style="text-align:center;margin-top:28px;">
+            <a href="http://127.0.0.1:8000/seller/orders/"
+               style="background:#f5a623;color:#0d1b3e;text-decoration:none;padding:13px 30px;border-radius:10px;font-weight:800;font-size:0.95rem;display:inline-block;">
+              View in Seller Panel →
+            </a>
+          </div>
+        </td>
+      </tr>
+
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#0d1b3e;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;">
+          <div style="color:rgba(255,255,255,0.6);font-size:0.82rem;">
+            ShopEase Seller Support: <a href="mailto:support@shopease.com" style="color:#f5a623;text-decoration:none;">support@shopease.com</a>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

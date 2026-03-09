@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Confirmed — ShopEase</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+      <!-- HEADER -->
+      <tr>
+        <td style="background:#0d1b3e;border-radius:16px 16px 0 0;padding:30px 40px;text-align:center;">
+          <div style="font-size:1.8rem;font-weight:900;color:#f5a623;letter-spacing:1px;">
+            🛍️ ShopEase
+          </div>
+          <div style="color:rgba(255,255,255,0.7);font-size:0.85rem;margin-top:4px;">
+            Your one-stop e-commerce destination
+          </div>
+        </td>
+      </tr>
+
+      <!-- SUCCESS BANNER -->
+      <tr>
+        <td style="background:#28a745;padding:20px 40px;text-align:center;">
+          <div style="font-size:1.3rem;font-weight:800;color:#fff;">
+            ✓ Order Confirmed!
+          </div>
+          <div style="color:rgba(255,255,255,0.9);margin-top:6px;font-size:0.9rem;">
+            Thank you, {{ order.customer.name }}! Your order has been placed successfully.
+          </div>
+        </td>
+      </tr>
+
+      <!-- ORDER SUMMARY BOX -->
+      <tr>
+        <td style="background:#fff;padding:30px 40px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-radius:10px;padding:20px;margin-bottom:24px;">
+            <tr>
+              <td style="font-size:0.85rem;color:#888;">Order ID</td>
+              <td style="font-size:0.85rem;color:#888;">Date</td>
+              <td style="font-size:0.85rem;color:#888;">Payment</td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:#0d1b3e;font-size:1rem;padding-top:4px;">#{{ order.pk }}</td>
+              <td style="font-weight:700;color:#0d1b3e;padding-top:4px;">{{ order.created_at|date:"d M Y" }}</td>
+              <td style="font-weight:700;color:#0d1b3e;padding-top:4px;">{{ order.get_payment_method_display }}</td>
+            </tr>
+          </table>
+
+          <!-- ITEMS TABLE -->
+          <h3 style="font-weight:800;color:#0d1b3e;font-size:1rem;margin:0 0 14px;">Order Items</h3>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+            <tr style="background:#0d1b3e;">
+              <td style="color:#f5a623;font-weight:700;font-size:0.8rem;padding:10px 14px;border-radius:8px 0 0 0;">ITEM</td>
+              <td style="color:#f5a623;font-weight:700;font-size:0.8rem;padding:10px 14px;text-align:center;">QTY</td>
+              <td style="color:#f5a623;font-weight:700;font-size:0.8rem;padding:10px 14px;text-align:right;border-radius:0 8px 0 0;">PRICE</td>
+            </tr>
+            {% for item in items %}
+            <tr style="border-bottom:1px solid #f0f0f0;">
+              <td style="padding:12px 14px;font-weight:600;color:#333;font-size:0.9rem;">{{ item.product_name }}</td>
+              <td style="padding:12px 14px;text-align:center;color:#666;font-size:0.9rem;">x{{ item.quantity }}</td>
+              <td style="padding:12px 14px;text-align:right;font-weight:700;color:#0d1b3e;">₹{{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+
+          <!-- TOTALS -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;border-top:2px solid #f0f0f0;padding-top:16px;">
+            <tr>
+              <td style="color:#888;font-size:0.9rem;padding:4px 0;">Subtotal</td>
+              <td style="text-align:right;color:#333;font-size:0.9rem;">₹{{ order.subtotal }}</td>
+            </tr>
+            {% if order.discount_amount %}
+            <tr>
+              <td style="color:#28a745;font-size:0.9rem;padding:4px 0;">Discount</td>
+              <td style="text-align:right;color:#28a745;font-size:0.9rem;">- ₹{{ order.discount_amount }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td style="color:#888;font-size:0.9rem;padding:4px 0;">Shipping</td>
+              <td style="text-align:right;color:#333;font-size:0.9rem;">{% if order.shipping == 0 %}FREE{% else %}₹{{ order.shipping }}{% endif %}</td>
+            </tr>
+            <tr>
+              <td style="color:#888;font-size:0.9rem;padding:4px 0;">Tax (5%)</td>
+              <td style="text-align:right;color:#333;font-size:0.9rem;">₹{{ order.tax }}</td>
+            </tr>
+            <tr style="border-top:2px solid #0d1b3e;margin-top:8px;">
+              <td style="font-weight:900;color:#0d1b3e;font-size:1.1rem;padding-top:10px;">TOTAL</td>
+              <td style="text-align:right;font-weight:900;color:#f5a623;font-size:1.2rem;padding-top:10px;">₹{{ order.total }}</td>
+            </tr>
+          </table>
+
+          <!-- DELIVERY ADDRESS -->
+          <div style="background:#f0f4ff;border-radius:10px;padding:16px 20px;margin-top:24px;">
+            <div style="font-weight:800;color:#0d1b3e;margin-bottom:8px;font-size:0.9rem;">
+              📍 Delivery Address
+            </div>
+            <div style="color:#555;font-size:0.88rem;line-height:1.6;">
+              {{ order.address.full_name }}<br>
+              {{ order.address.house }}<br>
+              {{ order.address.city }}, {{ order.address.state }} - {{ order.address.pincode }}<br>
+              📞 {{ order.address.phone }}
+            </div>
+          </div>
+
+          <!-- CTA BUTTON -->
+          <div style="text-align:center;margin-top:28px;">
+            <a href="http://127.0.0.1:8000/orders/detail/{{ order.pk }}/"
+               style="background:#f5a623;color:#0d1b3e;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:800;font-size:1rem;display:inline-block;">
+              Track Your Order →
+            </a>
+          </div>
+        </td>
+      </tr>
+
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#0d1b3e;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;">
+          <div style="color:rgba(255,255,255,0.6);font-size:0.82rem;">
+            Need help? Email us at
+            <a href="mailto:support@shopease.com" style="color:#f5a623;text-decoration:none;">support@shopease.com</a>
+          </div>
+          <div style="color:rgba(255,255,255,0.4);font-size:0.75rem;margin-top:8px;">
+            © 2026 ShopEase. This is an automated email, please do not reply.
+          </div>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

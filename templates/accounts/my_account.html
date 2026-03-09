@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% block title %}My Account - ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .account-page { background: #f8f9fa; min-height: calc(100vh - 140px); padding: 40px 0; }
+  .profile-card { background: #0d1b3e; border-radius: 20px; padding: 30px; text-align: center; color: #fff; }
+  .avatar-circle { width: 80px; height: 80px; background: #f5a623; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: #0d1b3e; margin: 0 auto 15px; }
+  .profile-name { font-size: 1.2rem; font-weight: 800; }
+  .profile-email { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+  .stat-card { background: #fff; border-radius: 14px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 12px; }
+  .stat-num { font-size: 2rem; font-weight: 900; color: #f5a623; }
+  .stat-lbl { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+  .sidebar-nav .nav-link { color: #555; padding: 12px 16px; border-radius: 10px; margin-bottom: 4px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
+  .sidebar-nav .nav-link:hover { background: #f0f4ff; color: #0d1b3e; }
+  .sidebar-nav .nav-link.active-link { background: #0d1b3e; color: #f5a623; }
+  .sidebar-nav .nav-link i { width: 18px; }
+  .content-card { background: #fff; border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+  .nav-tabs .nav-link { color: #888; font-weight: 600; border: none; padding: 12px 20px; }
+  .nav-tabs .nav-link.active { color: #0d1b3e; border-bottom: 3px solid #f5a623; font-weight: 800; background: transparent; }
+  .form-label { font-weight: 700; color: #0d1b3e; font-size: 0.875rem; }
+  .form-control { border: 2px solid #e0e7ff; border-radius: 8px; padding: 10px 14px; }
+  .form-control:focus { border-color: #f5a623; box-shadow: 0 0 0 3px rgba(245,166,35,0.15); }
+  .btn-save { background: #f5a623; color: #0d1b3e; border: none; border-radius: 10px; padding: 11px 28px; font-weight: 800; transition: all 0.2s; }
+  .btn-save:hover { background: #e09415; }
+  .address-card { background: #f8f9fa; border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; border: 2px solid transparent; position: relative; }
+  .address-card.default-addr { border-color: #f5a623; background: #fffbf0; }
+  .badge-default { background: #f5a623; color: #0d1b3e; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+  .btn-del-addr { background: none; border: 1px solid #dc3545; color: #dc3545; border-radius: 6px; padding: 4px 12px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+  .btn-del-addr:hover { background: #dc3545; color: #fff; }
+  .add-addr-form { background: #f0f4ff; border-radius: 14px; padding: 24px; margin-top: 20px; }
+  .add-addr-form h6 { font-weight: 800; color: #0d1b3e; margin-bottom: 18px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="account-page">
+  <div class="container">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+      <!-- LEFT SIDEBAR -->
+      <div class="col-lg-3">
+        <!-- Profile Card -->
+        <div class="profile-card mb-3">
+          <div class="avatar-circle">{{ customer.name|first|upper }}</div>
+          <div class="profile-name">{{ customer.name }}</div>
+          <div class="profile-email">{{ customer.email }}</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <div class="stat-card">
+              <div class="stat-num">{{ total_orders }}</div>
+              <div class="stat-lbl">Orders</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-card">
+              <div class="stat-num">{{ delivered }}</div>
+              <div class="stat-lbl">Delivered</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-card">
+              <div class="stat-num">{{ wishlist_count }}</div>
+              <div class="stat-lbl">Wishlist</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nav Links -->
+        <div class="sidebar-nav bg-white rounded-4 p-3 shadow-sm">
+          <a href="/orders/my-orders/" class="nav-link"><i class="bi bi-bag"></i>My Orders</a>
+          <a href="/products/wishlist/" class="nav-link"><i class="bi bi-heart"></i>Wishlist</a>
+          <a href="/accounts/my-account/" class="nav-link active-link"><i class="bi bi-person"></i>My Account</a>
+          <hr class="my-2">
+          <a href="/accounts/logout/" class="nav-link" style="color:#dc3545;"><i class="bi bi-box-arrow-right"></i>Logout</a>
+        </div>
+      </div>
+
+      <!-- RIGHT CONTENT -->
+      <div class="col-lg-9">
+        <div class="content-card">
+          <ul class="nav nav-tabs mb-4" id="accountTabs">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-profile"><i class="bi bi-person-circle me-1"></i>Edit Profile</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-password"><i class="bi bi-shield-lock me-1"></i>Change Password</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-addresses"><i class="bi bi-geo-alt me-1"></i>My Addresses</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- TAB 1: Edit Profile -->
+            <div class="tab-pane fade show active" id="tab-profile">
+              <h5 style="font-weight:800;color:#0d1b3e;margin-bottom:24px;">Edit Profile</h5>
+              <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_profile">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ customer.name }}" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{ customer.phone }}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" value="{{ customer.email }}" disabled>
+                    <small class="text-muted">Email cannot be changed.</small>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <button type="submit" class="btn-save"><i class="bi bi-check-lg me-2"></i>Save Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- TAB 2: Change Password -->
+            <div class="tab-pane fade" id="tab-password">
+              <h5 style="font-weight:800;color:#0d1b3e;margin-bottom:24px;">Change Password</h5>
+              <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+                <div class="row g-3">
+                  <div class="col-md-8">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" name="current_password" class="form-control" required>
+                  </div>
+                  <div class="col-md-8">
+                    <label class="form-label">New Password</label>
+                    <input type="password" name="new_password" class="form-control" required minlength="6">
+                  </div>
+                  <div class="col-md-8">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" name="confirm_password" class="form-control" required minlength="6">
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <button type="submit" class="btn-save"><i class="bi bi-shield-check me-2"></i>Update Password</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- TAB 3: Addresses -->
+            <div class="tab-pane fade" id="tab-addresses">
+              <h5 style="font-weight:800;color:#0d1b3e;margin-bottom:24px;">My Addresses</h5>
+
+              {% if addresses %}
+              {% for addr in addresses %}
+              <div class="address-card {% if addr.is_default %}default-addr{% endif %}">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <div style="font-weight:700;color:#0d1b3e;margin-bottom:4px;">
+                      {{ addr.full_name }}
+                      {% if addr.is_default %}<span class="badge-default ms-2">Default</span>{% endif %}
+                    </div>
+                    <div style="color:#555;font-size:0.9rem;">{{ addr.house }}, {{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</div>
+                    <div style="color:#888;font-size:0.85rem;margin-top:3px;"><i class="bi bi-telephone me-1"></i>{{ addr.phone }}</div>
+                  </div>
+                  <form method="POST" action="/orders/address/delete/{{ addr.pk }}/">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="/accounts/my-account/">
+                    <button type="submit" class="btn-del-addr" onclick="return confirm('Delete this address?')">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </form>
+                </div>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div style="text-align:center;padding:30px;color:#aaa;">
+                <i class="bi bi-geo-alt" style="font-size:3rem;display:block;margin-bottom:10px;"></i>
+                No saved addresses yet.
+              </div>
+              {% endif %}
+
+              <!-- Add New Address -->
+              <div class="add-addr-form">
+                <h6><i class="bi bi-plus-circle me-2" style="color:#f5a623;"></i>Add New Address</h6>
+                <form method="POST" action="/orders/address/add/">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="/accounts/my-account/">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Full Name</label>
+                      <input type="text" name="full_name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Phone</label>
+                      <input type="text" name="phone" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">House / Street</label>
+                      <input type="text" name="house" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">City</label>
+                      <input type="text" name="city" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">State</label>
+                      <input type="text" name="state" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Pincode</label>
+                      <input type="text" name="pincode" class="form-control" required>
+                    </div>
+                  </div>
+                  <div class="mt-3">
+                    <button type="submit" class="btn-save"><i class="bi bi-plus me-2"></i>Add Address</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

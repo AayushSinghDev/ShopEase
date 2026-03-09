@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Compare Products — ShopEase{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header { background: #0d1b3e; padding: 40px 0 30px; color: #fff; }
+  .page-header h1 { font-size: 2rem; font-weight: 900; }
+  .compare-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; height: 100%; }
+  .compare-card img { width: 100%; height: 200px; object-fit: cover; }
+  .compare-card .no-img { width: 100%; height: 200px; background: #f0f4ff; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #c0cce0; }
+  .compare-body { padding: 20px; }
+  .compare-name { font-weight: 800; color: #0d1b3e; font-size: 1.05rem; margin-bottom: 6px; }
+  .compare-price { font-size: 1.4rem; font-weight: 900; color: #f5a623; margin-bottom: 12px; }
+  .compare-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.88rem; }
+  .compare-row .label { color: #888; font-weight: 600; }
+  .compare-row .value { color: #0d1b3e; font-weight: 700; text-align: right; max-width: 60%; }
+  .stars { color: #f5a623; font-size: 0.9rem; }
+  .btn-compare-cart { background: #0d1b3e; color: #f5a623; border: none; border-radius: 10px; padding: 10px 0; font-weight: 700; font-size: 0.9rem; width: 100%; margin-top: 14px; cursor: pointer; transition: all 0.2s; }
+  .btn-compare-cart:hover { background: #f5a623; color: #0d1b3e; }
+  .btn-remove-compare { background: transparent; color: #dc3545; border: 2px solid #dc3545; border-radius: 10px; padding: 7px 0; font-weight: 700; font-size: 0.85rem; width: 100%; margin-top: 8px; cursor: pointer; transition: all 0.2s; }
+  .btn-remove-compare:hover { background: #dc3545; color: #fff; }
+  .btn-clear-all { background: #6c757d; color: #fff; border: none; border-radius: 10px; padding: 10px 28px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-clear-all:hover { background: #495057; }
+  .empty-state { text-align: center; padding: 80px 20px; }
+  .empty-state i { font-size: 5rem; color: #dde2f0; }
+  .empty-state h3 { color: #0d1b3e; font-weight: 800; margin: 20px 0 10px; }
+  .empty-state p { color: #888; margin-bottom: 24px; }
+  .btn-browse { background: #0d1b3e; color: #f5a623; border: none; border-radius: 12px; padding: 12px 30px; font-weight: 700; text-decoration: none; display: inline-block; transition: all 0.2s; }
+  .btn-browse:hover { background: #f5a623; color: #0d1b3e; }
+  .hint-msg { background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 14px 20px; font-weight: 600; color: #856404; }
+  .action-toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: none; }
+  .toast-inner { background: #0d1b3e; color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1><i class="bi bi-arrow-left-right me-2" style="color:#f5a623"></i>Compare Products</h1>
+    <p style="color:rgba(255,255,255,0.7);margin-top:6px;">Compare up to 3 products side by side</p>
+  </div>
+</div>
+
+<div class="container py-5">
+  {% if products_with_ratings %}
+    {% if products_with_ratings|length == 1 %}
+    <div class="hint-msg mb-4">
+      <i class="bi bi-info-circle-fill me-2"></i>You have 1 product selected. Add more products to compare!
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+      {% for entry in products_with_ratings %}
+      {% with p=entry.product avg=entry.avg_rating %}
+      <div class="col-md-4" id="cmp-col-{{ p.id }}">
+        <div class="compare-card">
+          <a href="{% url 'products:product_detail' p.pk %}">
+            {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}">
+            {% else %}<div class="no-img"><i class="bi bi-image"></i></div>{% endif %}
+          </a>
+          <div class="compare-body">
+            <div class="compare-name">{{ p.name }}</div>
+            <div class="compare-price">₹{{ p.price }}</div>
+            <div class="compare-row">
+              <span class="label">Category</span>
+              <span class="value">{% if p.category %}{{ p.category.name }}{% else %}—{% endif %}</span>
+            </div>
+            <div class="compare-row">
+              <span class="label">Rating</span>
+              <span class="value">
+                {% if avg %}
+                  <span class="stars">
+                    {% for i in "12345" %}{% if forloop.counter <= avg %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star"></i>{% endif %}{% endfor %}
+                  </span> {{ avg }}
+                {% else %}No reviews{% endif %}
+              </span>
+            </div>
+            <div class="compare-row">
+              <span class="label">Stock</span>
+              <span class="value">
+                {% if p.stock == 0 %}<span style="color:#dc3545">Out of Stock</span>
+                {% elif p.stock <= 5 %}<span style="color:#856404">Only {{ p.stock }} left</span>
+                {% else %}<span style="color:#155724">In Stock</span>{% endif %}
+              </span>
+            </div>
+            <div class="compare-row">
+              <span class="label">Description</span>
+              <span class="value">{{ p.description|truncatechars:60 }}</span>
+            </div>
+            {% if p.stock > 0 %}
+            <form action="/orders/cart/add/{{ p.id }}/" method="POST">
+              {% csrf_token %}<input type="hidden" name="quantity" value="1">
+              <button type="submit" class="btn-compare-cart"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+            </form>
+            {% else %}
+            <button class="btn-compare-cart" disabled style="opacity:0.5;cursor:not-allowed;"><i class="bi bi-x-circle me-1"></i>Out of Stock</button>
+            {% endif %}
+            <button class="btn-remove-compare" onclick="removeFromCompare({{ p.id }})">
+              <i class="bi bi-x-lg me-1"></i>Remove
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-5">
+      <form action="{% url 'products:compare_clear' %}" method="POST" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-clear-all"><i class="bi bi-trash me-2"></i>Clear All</button>
+      </form>
+    </div>
+
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-arrow-left-right"></i>
+    <h3>No products selected</h3>
+    <p>Browse the shop and click "Compare" on products to add them here.</p>
+    <a href="{% url 'products:shop' %}" class="btn-browse"><i class="bi bi-shop me-2"></i>Browse Products</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="action-toast" id="action-toast">
+  <div class="toast-inner"><i class="bi bi-check-circle-fill me-2" style="color:#f5a623"></i><span id="toast-msg">Done</span></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCsrfToken() {
+  const name = 'csrftoken';
+  for (let c of document.cookie.split(';')) {
+    c = c.trim();
+    if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+  }
+  return '';
+}
+function showToast(msg) {
+  const t = document.getElementById('action-toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2000);
+}
+function removeFromCompare(productId) {
+  fetch(`/products/compare/remove/${productId}/`, {
+    method: 'POST', headers: {'X-CSRFToken': getCsrfToken()}
+  }).then(r => r.json()).then(data => {
+    const col = document.getElementById('cmp-col-' + productId);
+    if (col) col.remove();
+    showToast('Removed from comparison');
+    if (data.count === 0) setTimeout(() => location.reload(), 800);
+  });
+}
+</script>
+{% endblock %}

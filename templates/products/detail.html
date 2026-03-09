@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} - ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .breadcrumb-bar { background: #0d1b3e; padding: 14px 0; }
+  .product-detail-img { border-radius: 16px; overflow: hidden; background: #f0f4ff; height: 420px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+  .product-detail-img img { width: 100%; height: 100%; object-fit: cover; }
+  .product-detail-img .no-img-icon { font-size: 8rem; color: #c0cce0; }
+  .product-info-card { background: #fff; border-radius: 20px; padding: 35px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+  .product-category-badge { background: #f0f4ff; color: #0d1b3e; font-size: 0.78rem; font-weight: 700; padding: 5px 14px; border-radius: 20px; display: inline-block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+  .product-detail-name { font-size: 1.8rem; font-weight: 900; color: #0d1b3e; margin-bottom: 15px; line-height: 1.3; }
+  .product-detail-price { font-size: 2.2rem; font-weight: 900; color: #f5a623; margin-bottom: 20px; }
+  .stock-status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; margin-bottom: 20px; }
+  .stock-ok { background: #d4edda; color: #155724; }
+  .stock-low-warn { background: #fff3cd; color: #856404; }
+  .stock-out { background: #f8d7da; color: #721c24; }
+  .product-detail-desc { color: #555; line-height: 1.8; font-size: 0.95rem; margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #f5a623; }
+  .divider { border: none; border-top: 2px solid #f0f0f0; margin: 20px 0; }
+  .qty-label { font-weight: 700; color: #0d1b3e; margin-bottom: 10px; font-size: 0.95rem; }
+  .qty-input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .qty-btn { background: #0d1b3e; color: #f5a623; border: none; border-radius: 8px; width: 40px; height: 40px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .qty-btn:hover { background: #f5a623; color: #0d1b3e; }
+  .qty-display { background: #f0f4ff; border: 2px solid #e0e7ff; border-radius: 8px; width: 60px; height: 40px; text-align: center; font-weight: 700; color: #0d1b3e; font-size: 1rem; }
+  .btn-add-to-cart-big { background: #0d1b3e; color: #f5a623; border: none; border-radius: 12px; padding: 14px 30px; font-weight: 800; font-size: 1rem; width: 100%; transition: all 0.25s; cursor: pointer; margin-bottom: 12px; }
+  .btn-add-to-cart-big:hover { background: #f5a623; color: #0d1b3e; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,166,35,0.4); }
+  .btn-view-cart { background: transparent; color: #0d1b3e; border: 2px solid #0d1b3e; border-radius: 12px; padding: 12px 30px; font-weight: 700; font-size: 0.95rem; width: 100%; text-decoration: none; display: block; text-align: center; transition: all 0.25s; }
+  .btn-view-cart:hover { background: #0d1b3e; color: #f5a623; }
+  .seller-info { background: #f8f9fa; border-radius: 12px; padding: 15px 20px; margin-top: 20px; display: flex; align-items: center; gap: 12px; }
+  .seller-avatar { width: 42px; height: 42px; background: #0d1b3e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #f5a623; font-size: 1.2rem; }
+
+  /* Action buttons */
+  .action-buttons { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .btn-wishlist { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+  .btn-wish-add { background: #fff0f0; color: #dc3545; border: 2px solid #dc3545; }
+  .btn-wish-add:hover { background: #dc3545; color: #fff; }
+  .btn-wish-rem { background: #dc3545; color: #fff; border: 2px solid #dc3545; }
+  .btn-wish-rem:hover { background: #b02a37; }
+  .btn-compare-action { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; background: #fff; color: #0d1b3e; border: 2px solid #0d1b3e; transition: all 0.2s; }
+  .btn-compare-action:hover { background: #0d1b3e; color: #f5a623; }
+
+  /* Rating summary */
+  .section-card { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-top: 40px; }
+  .section-card h3 { font-weight: 800; color: #0d1b3e; margin-bottom: 20px; font-size: 1.2rem; }
+  .avg-big { font-size: 3.5rem; font-weight: 900; color: #0d1b3e; line-height: 1; }
+  .avg-stars { color: #f5a623; font-size: 1.3rem; margin: 6px 0; }
+  .total-reviews { color: #888; font-size: 0.88rem; }
+  .rating-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+  .rating-bar-row .star-label { width: 40px; font-weight: 700; color: #0d1b3e; white-space: nowrap; }
+  .rating-bar-outer { flex: 1; background: #f0f0f0; border-radius: 20px; height: 10px; overflow: hidden; }
+  .rating-bar-inner { background: #f5a623; border-radius: 20px; height: 100%; }
+  .rating-bar-count { width: 30px; text-align: right; font-weight: 700; color: #888; }
+
+  /* Review form */
+  .star-selector { display: flex; gap: 6px; margin-bottom: 14px; font-size: 1.6rem; cursor: pointer; }
+  .star-selector i { color: #ddd; transition: color 0.15s; }
+  .star-selector i.active { color: #f5a623; }
+  .review-textarea { width: 100%; border: 2px solid #e0e7ff; border-radius: 10px; padding: 12px 14px; font-size: 0.95rem; resize: vertical; min-height: 90px; outline: none; transition: border 0.2s; }
+  .review-textarea:focus { border-color: #0d1b3e; }
+  .btn-submit-review { background: #0d1b3e; color: #f5a623; border: none; border-radius: 10px; padding: 11px 28px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+  .btn-submit-review:hover { background: #f5a623; color: #0d1b3e; }
+
+  /* Reviews list */
+  .review-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 14px; border-left: 4px solid #f5a623; }
+  .reviewer-name { font-weight: 800; color: #0d1b3e; font-size: 0.95rem; }
+  .review-date { font-size: 0.8rem; color: #aaa; }
+  .review-stars { color: #f5a623; font-size: 0.9rem; }
+  .review-comment { color: #555; font-size: 0.92rem; line-height: 1.6; margin-top: 8px; }
+  .btn-delete-review { background: none; border: 1px solid #dc3545; color: #dc3545; border-radius: 6px; padding: 3px 10px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+  .btn-delete-review:hover { background: #dc3545; color: #fff; }
+
+  /* Related products */
+  .related-section { margin-top: 50px; }
+  .related-section h3 { font-weight: 800; color: #0d1b3e; font-size: 1.3rem; margin-bottom: 20px; }
+  .related-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.07); transition: transform 0.2s; text-decoration: none; color: inherit; display: block; }
+  .related-card:hover { transform: translateY(-4px); }
+  .related-card img { width: 100%; height: 160px; object-fit: cover; }
+  .related-card .no-img { width: 100%; height: 160px; background: #f0f4ff; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #c0cce0; }
+  .related-card-body { padding: 14px; }
+  .related-name { font-weight: 700; color: #0d1b3e; font-size: 0.88rem; margin-bottom: 4px; }
+  .related-price { font-weight: 900; color: #f5a623; font-size: 1rem; }
+
+  /* Toast */
+  .action-toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: none; }
+  .toast-inner { background: #0d1b3e; color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- BREADCRUMB -->
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" style="color:#f5a623">Home</a></li>
+        <li class="breadcrumb-item"><a href="/products/" style="color:rgba(255,255,255,0.7)">Shop</a></li>
+        <li class="breadcrumb-item active text-white">{{ product.name }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-5">
+    <!-- PRODUCT IMAGE -->
+    <div class="col-lg-5">
+      <div class="product-detail-img" id="mainImgWrap">
+        {% if product_images %}
+          <img src="{{ product_images.0.image.url }}" alt="{{ product.name }}" id="mainImg"/>
+        {% elif product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImg"/>
+        {% else %}
+          <i class="bi bi-image no-img-icon"></i>
+        {% endif %}
+      </div>
+      <!-- Thumbnail gallery -->
+      {% if product_images.count > 1 %}
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        {% for img in product_images %}
+        <div onclick="document.getElementById('mainImg').src='{{ img.image.url }}'"
+             style="width:68px;height:68px;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid {% if forloop.first %}#f5a623{% else %}#e0e7ff{% endif %};flex-shrink:0;">
+          <img src="{{ img.image.url }}" style="width:100%;height:100%;object-fit:cover;">
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- PRODUCT INFO -->
+    <div class="col-lg-7">
+      <div class="product-info-card">
+        {% if product.category %}
+        <span class="product-category-badge"><i class="bi bi-tag-fill me-1"></i>{{ product.category.name }}</span>
+        {% endif %}
+
+        <h1 class="product-detail-name">{{ product.name }}</h1>
+
+        <!-- Price with sale support -->
+        {% if sale_active %}
+        <div class="product-detail-price">
+          <span style="color:#dc3545;">₹{{ effective_price }}</span>
+          <span style="color:#aaa;font-size:1.1rem;font-weight:500;text-decoration:line-through;margin-left:10px;">₹{{ original_price }}</span>
+          <span style="background:#dc3545;color:#fff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;margin-left:10px;vertical-align:middle;">SALE</span>
+        </div>
+        {% else %}
+        <div class="product-detail-price">₹{{ product.price }}</div>
+        {% endif %}
+
+        {% if product.stock == 0 %}
+          <span class="stock-status stock-out"><i class="bi bi-x-circle-fill"></i> Out of Stock</span>
+        {% elif product.stock <= 5 %}
+          <span class="stock-status stock-low-warn"><i class="bi bi-exclamation-triangle-fill"></i> Only {{ product.stock }} left!</span>
+        {% else %}
+          <span class="stock-status stock-ok"><i class="bi bi-check-circle-fill"></i> In Stock ({{ product.stock }} available)</span>
+        {% endif %}
+
+        <hr class="divider" />
+
+        <!-- Wishlist + Compare Buttons -->
+        <div class="action-buttons">
+          {% if request.session.user_role == 'customer' %}
+          <button id="wish-btn"
+            class="btn-wishlist {% if in_wishlist %}btn-wish-rem{% else %}btn-wish-add{% endif %}"
+            onclick="toggleWishlist({{ product.id }}, {{ in_wishlist|yesno:'true,false' }})">
+            <i class="bi {% if in_wishlist %}bi-heart-fill{% else %}bi-heart{% endif %}" id="wish-icon"></i>
+            <span id="wish-label">{% if in_wishlist %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}</span>
+          </button>
+          {% else %}
+          <a href="/accounts/login/" class="btn-wishlist btn-wish-add">
+            <i class="bi bi-heart"></i> Add to Wishlist
+          </a>
+          {% endif %}
+          <button class="btn-compare-action" onclick="addToCompare({{ product.id }})">
+            <i class="bi bi-arrow-left-right"></i> Compare
+          </button>
+        </div>
+
+        <div class="product-detail-desc">{{ product.description }}</div>
+
+        {% if product.stock > 0 %}
+        <form action="/orders/cart/add/{{ product.id }}/" method="POST">
+          {% csrf_token %}
+          <div class="qty-label">Quantity:</div>
+          <div class="qty-input-group">
+            <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+            <input type="number" name="quantity" id="qty-field" class="qty-display" value="1" min="1" max="{{ product.stock }}" readonly />
+            <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+            <span style="color:#999;font-size:0.85rem">Max: {{ product.stock }}</span>
+          </div>
+          <button type="submit" class="btn-add-to-cart-big"><i class="bi bi-cart-plus me-2"></i>Add to Cart</button>
+        </form>
+        <a href="/orders/cart/" class="btn-view-cart"><i class="bi bi-cart3 me-2"></i>View Cart</a>
+        {% else %}
+        <button class="btn-add-to-cart-big" disabled style="opacity:0.5;cursor:not-allowed;"><i class="bi bi-x-circle me-2"></i>Out of Stock</button>
+        {% endif %}
+
+        {% if product.seller %}
+        <div class="seller-info">
+          <div class="seller-avatar"><i class="bi bi-shop"></i></div>
+          <div>
+            <div style="font-weight:700;color:#0d1b3e;font-size:0.9rem">Sold by: {{ product.seller.name }}</div>
+            <div style="font-size:0.8rem;color:#999">Verified Seller</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RATING SUMMARY ── -->
+  <div class="section-card">
+    <h3><i class="bi bi-star-fill me-2" style="color:#f5a623"></i>Customer Ratings</h3>
+    <div class="row align-items-center">
+      <div class="col-md-3 text-center mb-3 mb-md-0">
+        <div class="avg-big">{{ avg_rating }}</div>
+        <div class="avg-stars">
+          {% for i in "12345" %}
+            {% if forloop.counter <= avg_rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star"></i>{% endif %}
+          {% endfor %}
+        </div>
+        <div class="total-reviews">{{ reviews.count }} review{{ reviews.count|pluralize }}</div>
+      </div>
+      <div class="col-md-9" id="rating-bars">
+        {% for star in "54321" %}
+        <div class="rating-bar-row">
+          <span class="star-label">{{ star }} <i class="bi bi-star-fill" style="color:#f5a623;font-size:0.75rem"></i></span>
+          <div class="rating-bar-outer">
+            <div class="rating-bar-inner" data-star="{{ star }}" style="width:0%"></div>
+          </div>
+          <span class="rating-bar-count" data-star="{{ star }}">0</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WRITE / EDIT REVIEW ── -->
+  {% if request.session.user_role == 'customer' %}
+  <div class="section-card">
+    <h3><i class="bi bi-pencil-square me-2" style="color:#f5a623"></i>{% if user_review %}Edit Your Review{% else %}Write a Review{% endif %}</h3>
+    <form action="{% url 'products:add_review' product.pk %}" method="POST">
+      {% csrf_token %}
+      <div class="star-selector" id="star-selector">
+        <i class="bi bi-star-fill" data-val="1"></i>
+        <i class="bi bi-star-fill" data-val="2"></i>
+        <i class="bi bi-star-fill" data-val="3"></i>
+        <i class="bi bi-star-fill" data-val="4"></i>
+        <i class="bi bi-star-fill" data-val="5"></i>
+      </div>
+      <input type="hidden" name="rating" id="rating-input" value="{% if user_review %}{{ user_review.rating }}{% else %}0{% endif %}">
+      <textarea name="comment" class="review-textarea" placeholder="Share your experience with this product..." required>{% if user_review %}{{ user_review.comment }}{% endif %}</textarea>
+      <br>
+      <button type="submit" class="btn-submit-review">
+        <i class="bi bi-send me-2"></i>{% if user_review %}Update Review{% else %}Submit Review{% endif %}
+      </button>
+    </form>
+  </div>
+  {% else %}
+  <div style="background:#f0f4ff;border-radius:12px;padding:20px;margin-top:24px;text-align:center;">
+    <i class="bi bi-lock me-2" style="color:#0d1b3e"></i>
+    <a href="/accounts/login/" style="color:#0d1b3e;font-weight:700;">Login as customer</a> to write a review.
+  </div>
+  {% endif %}
+
+  <!-- ── REVIEWS LIST ── -->
+  {% if reviews %}
+  <div style="margin-top:24px;">
+    <h3 style="font-weight:800;color:#0d1b3e;font-size:1.2rem;margin-bottom:16px;">
+      <i class="bi bi-chat-left-text me-2" style="color:#f5a623"></i>All Reviews ({{ reviews.count }})
+    </h3>
+    {% for review in reviews %}
+    <div class="review-card">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <div class="reviewer-name">{{ review.customer.name }}</div>
+          <div class="review-stars">
+            {% for i in "12345" %}{% if forloop.counter <= review.rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star"></i>{% endif %}{% endfor %}
+          </div>
+          <div class="review-date">{{ review.created_at|date:"d M Y" }}</div>
+        </div>
+        {% if request.session.user_id == review.customer.id|stringformat:"s" %}
+        <form action="{% url 'products:delete_review' review.pk %}" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn-delete-review" onclick="return confirm('Delete your review?')">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      <div class="review-comment">{{ review.comment }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── RELATED PRODUCTS ── -->
+  {% if related_products %}
+  <div class="related-section">
+    <h3><i class="bi bi-grid me-2" style="color:#f5a623"></i>Related Products</h3>
+    <div class="row g-3">
+      {% for rp in related_products %}
+      <div class="col-6 col-md-3">
+        <a href="{% url 'products:product_detail' rp.pk %}" class="related-card">
+          {% if rp.image %}<img src="{{ rp.image.url }}" alt="{{ rp.name }}">
+          {% else %}<div class="no-img"><i class="bi bi-image"></i></div>{% endif %}
+          <div class="related-card-body">
+            <div class="related-name">{{ rp.name }}</div>
+            <div class="related-price">₹{{ rp.price }}</div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Toast -->
+<div class="action-toast" id="action-toast">
+  <div class="toast-inner"><i class="bi bi-check-circle-fill me-2" style="color:#f5a623"></i><span id="toast-msg">Done</span></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Qty control
+function changeQty(delta) {
+  const field = document.getElementById('qty-field');
+  if (!field) return;
+  const max = parseInt(field.getAttribute('max'));
+  let val = parseInt(field.value) + delta;
+  if (val < 1) val = 1;
+  if (val > max) val = max;
+  field.value = val;
+}
+
+// CSRF
+function getCsrfToken() {
+  const name = 'csrftoken';
+  for (let c of document.cookie.split(';')) {
+    c = c.trim();
+    if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+  }
+  return '';
+}
+
+// Toast
+function showToast(msg) {
+  const t = document.getElementById('action-toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+
+// Wishlist toggle
+function toggleWishlist(productId, isInWishlist) {
+  const url = isInWishlist
+    ? `/products/wishlist/remove/${productId}/`
+    : `/products/wishlist/add/${productId}/`;
+  fetch(url, { method: 'POST', headers: {'X-CSRFToken': getCsrfToken()} })
+    .then(r => r.json())
+    .then(data => {
+      const btn = document.getElementById('wish-btn');
+      const icon = document.getElementById('wish-icon');
+      const label = document.getElementById('wish-label');
+      if (data.in_wishlist) {
+        btn.className = 'btn-wishlist btn-wish-rem';
+        icon.className = 'bi bi-heart-fill';
+        label.textContent = 'Remove from Wishlist';
+        btn.setAttribute('onclick', `toggleWishlist(${productId}, true)`);
+        showToast('Added to wishlist ❤');
+      } else {
+        btn.className = 'btn-wishlist btn-wish-add';
+        icon.className = 'bi bi-heart';
+        label.textContent = 'Add to Wishlist';
+        btn.setAttribute('onclick', `toggleWishlist(${productId}, false)`);
+        showToast('Removed from wishlist');
+      }
+    });
+}
+
+// Compare add
+function addToCompare(productId) {
+  fetch(`/products/compare/add/${productId}/`, {
+    method: 'POST', headers: {'X-CSRFToken': getCsrfToken()}
+  }).then(r => r.json()).then(data => {
+    showToast(data.success ? `Added to comparison (${data.count}/3)` : data.message);
+  });
+}
+
+// Star selector
+document.addEventListener('DOMContentLoaded', function () {
+  const stars = document.querySelectorAll('#star-selector i');
+  const ratingInput = document.getElementById('rating-input');
+  if (!stars.length || !ratingInput) return;
+  let current = parseInt(ratingInput.value) || 0;
+
+  function renderStars(n) {
+    stars.forEach((s, i) => s.classList.toggle('active', i < n));
+  }
+  renderStars(current);
+
+  stars.forEach((star, idx) => {
+    star.addEventListener('mouseenter', () => renderStars(idx + 1));
+    star.addEventListener('click', () => { current = idx + 1; ratingInput.value = current; renderStars(current); });
+  });
+  document.getElementById('star-selector').addEventListener('mouseleave', () => renderStars(current));
+});
+
+// Rating bars
+document.addEventListener('DOMContentLoaded', function () {
+  const totalReviews = {{ reviews.count }};
+  const breakdown = {{ rating_breakdown|safe }};
+  document.querySelectorAll('.rating-bar-inner').forEach(bar => {
+    const star = parseInt(bar.getAttribute('data-star'));
+    const count = breakdown[star] || 0;
+    const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+    bar.style.width = pct + '%';
+  });
+  document.querySelectorAll('.rating-bar-count').forEach(el => {
+    const star = parseInt(el.getAttribute('data-star'));
+    el.textContent = breakdown[star] || 0;
+  });
+});
+</script>
+{% endblock %}

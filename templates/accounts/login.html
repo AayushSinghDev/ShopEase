@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopEase - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+      :root {
+        --navy: #0d1b3e;
+        --navy-light: #162447;
+        --orange: #f5a623;
+        --orange-hover: #e09415;
+      }
+      body {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .login-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        overflow: hidden;
+        width: 100%;
+        max-width: 460px;
+      }
+      .login-header {
+        background: var(--navy);
+        padding: 30px;
+        text-align: center;
+      }
+      .login-header h2 {
+        color: var(--orange);
+        font-weight: 800;
+        font-size: 2rem;
+        margin: 0;
+        letter-spacing: 1px;
+      }
+      .login-header p {
+        color: rgba(255,255,255,0.7);
+        margin: 5px 0 0;
+        font-size: 0.9rem;
+      }
+      .login-body { padding: 35px 40px; }
+      .role-selector {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 25px;
+        background: #f0f4ff;
+        border-radius: 10px;
+        padding: 6px;
+      }
+      .role-btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        padding: 10px 5px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #555;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+      .role-btn i { font-size: 1.3rem; }
+      .role-btn.active {
+        background: var(--navy);
+        color: var(--orange);
+        box-shadow: 0 4px 12px rgba(13,27,62,0.3);
+      }
+      .role-btn:hover:not(.active) { background: rgba(13,27,62,0.08); }
+      .form-label { font-weight: 600; color: var(--navy); font-size: 0.875rem; }
+      .form-control {
+        border: 2px solid #e0e7ff;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        transition: border-color 0.2s;
+      }
+      .form-control:focus {
+        border-color: var(--orange);
+        box-shadow: 0 0 0 3px rgba(245,166,35,0.15);
+      }
+      .input-group .form-control { border-right: none; }
+      .input-group-text {
+        background: #f0f4ff;
+        border: 2px solid #e0e7ff;
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
+      }
+      .btn-login {
+        background: var(--orange);
+        border: none;
+        color: var(--navy);
+        font-weight: 700;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 1rem;
+        width: 100%;
+        transition: all 0.25s ease;
+        letter-spacing: 0.5px;
+      }
+      .btn-login:hover {
+        background: var(--orange-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(245,166,35,0.4);
+      }
+      .divider {
+        text-align: center;
+        position: relative;
+        margin: 20px 0;
+        color: #aaa;
+        font-size: 0.85rem;
+      }
+      .divider::before, .divider::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 42%;
+        height: 1px;
+        background: #e0e0e0;
+      }
+      .divider::before { left: 0; }
+      .divider::after { right: 0; }
+      .register-link { text-align: center; font-size: 0.88rem; color: #666; }
+      .register-link a { color: var(--navy); font-weight: 700; text-decoration: none; }
+      .register-link a:hover { color: var(--orange); }
+      .alert-custom { border-radius: 8px; font-size: 0.875rem; padding: 10px 14px; }
+      #role-badge {
+        display: inline-block;
+        background: var(--orange);
+        color: var(--navy);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 20px;
+        margin-bottom: 15px;
+      }
+
+      /* ── Face Login Button ── */
+      .btn-face-login {
+        background: transparent;
+        border: 2px solid var(--navy);
+        color: var(--navy);
+        font-weight: 700;
+        padding: 11px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        width: 100%;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .btn-face-login:hover {
+        background: var(--navy);
+        color: var(--orange);
+        transform: translateY(-1px);
+      }
+
+      /* ── Face Login Modal ── */
+      .face-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.75);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+      }
+      .face-modal-overlay.active { display: flex; }
+      .face-modal {
+        background: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        width: 400px;
+        max-width: 95vw;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      }
+      .face-modal h5 {
+        color: var(--navy);
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+      .face-modal p { color: #666; font-size: 0.88rem; margin-bottom: 16px; }
+      #face-video-preview {
+        width: 100%;
+        border-radius: 10px;
+        border: 3px solid var(--navy);
+        display: none;
+        margin-bottom: 14px;
+      }
+      .scan-animation {
+        display: none;
+        font-size: 2.5rem;
+        animation: pulse 1s infinite;
+        margin: 10px 0;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.1); }
+      }
+      #face-status-msg {
+        font-size: 0.88rem;
+        font-weight: 600;
+        min-height: 24px;
+        margin-bottom: 12px;
+      }
+      .face-modal-btns { display: flex; gap: 10px; }
+      .btn-scan {
+        flex: 1;
+        background: var(--orange);
+        border: none;
+        color: var(--navy);
+        font-weight: 700;
+        padding: 11px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-scan:hover { background: var(--orange-hover); }
+      .btn-scan:disabled { opacity: 0.6; cursor: not-allowed; }
+      .btn-cancel-face {
+        flex: 1;
+        background: #f0f4ff;
+        border: none;
+        color: var(--navy);
+        font-weight: 600;
+        padding: 11px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .btn-cancel-face:hover { background: #dde4f7; }
+    </style>
+  </head>
+  <body>
+    <div class="login-card">
+      <div class="login-header">
+        <h2><i class="bi bi-bag-heart-fill"></i> ShopEase</h2>
+        <p>Your one-stop e-commerce platform</p>
+      </div>
+
+      <div class="login-body">
+        <!-- Role Selector -->
+        <div class="role-selector">
+          <button class="role-btn active" onclick="setRole('customer')" id="btn-customer">
+            <i class="bi bi-person-fill"></i> Customer
+          </button>
+          <button class="role-btn" onclick="setRole('seller')" id="btn-seller">
+            <i class="bi bi-shop"></i> Seller
+          </button>
+          <button class="role-btn" onclick="setRole('admin')" id="btn-admin">
+            <i class="bi bi-shield-lock-fill"></i> Admin
+          </button>
+        </div>
+
+        <div class="text-center">
+          <span id="role-badge">Logging in as: Customer</span>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Login Form -->
+        <form method="POST" action="{% url 'accounts:login' %}">
+          {% csrf_token %}
+          <input type="hidden" name="role" id="role-input" value="customer" />
+
+          <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="email" class="form-control" placeholder="Enter your email" required />
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <input type="password" name="password" id="password-field" class="form-control"
+                     placeholder="Enter your password" required />
+              <span class="input-group-text" onclick="togglePassword()">
+                <i class="bi bi-eye" id="eye-icon"></i>
+              </span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-login">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+          </button>
+        </form>
+
+        <!-- Face Login — hidden for admin -->
+        <div id="face-login-section">
+          <div class="divider">or</div>
+          <button class="btn-face-login" onclick="openFaceModal()">
+            <i class="bi bi-camera-fill"></i> Login with Face
+          </button>
+        </div>
+
+        <!-- Register Link (hidden for admin) -->
+        <div class="divider" id="divider-section">or</div>
+        <div class="register-link" id="register-section">
+          Don't have an account?
+          <a href="{% url 'accounts:register' %}">Register here</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Face Login Modal ── -->
+    <div class="face-modal-overlay" id="faceModalOverlay">
+      <div class="face-modal">
+        <h5><i class="bi bi-camera-video-fill text-warning"></i> Face Login</h5>
+        <p id="face-modal-subtitle">Position your face clearly in front of the camera, then click Scan.</p>
+
+        <!-- Webcam preview (browser-side only for visual feedback) -->
+        <video id="face-video-preview" autoplay muted playsinline></video>
+
+        <div class="scan-animation" id="scan-animation">🔍</div>
+
+        <div id="face-status-msg" class="text-muted">Ready to scan</div>
+
+        <div class="face-modal-btns">
+          <button class="btn-scan" id="btn-scan-face" onclick="startFaceScan()">
+            <i class="bi bi-camera-fill me-1"></i> Scan Face
+          </button>
+          <button class="btn-cancel-face" onclick="closeFaceModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const roleLabels = { customer: "Customer", seller: "Seller", admin: "Super Admin" };
+      let webcamStream = null;
+
+      function setRole(role) {
+        document.querySelectorAll(".role-btn").forEach(btn => btn.classList.remove("active"));
+        document.getElementById("btn-" + role).classList.add("active");
+        document.getElementById("role-input").value = role;
+        document.getElementById("role-badge").textContent = "Logging in as: " + roleLabels[role];
+
+        const faceSection = document.getElementById("face-login-section");
+        const regSection  = document.getElementById("register-section");
+        const divider     = document.getElementById("divider-section");
+
+        if (role === "admin") {
+          faceSection.style.display = "none";
+          regSection.style.display  = "none";
+          divider.style.display     = "none";
+        } else {
+          faceSection.style.display = "block";
+          regSection.style.display  = "block";
+          divider.style.display     = "block";
+        }
+      }
+
+      function togglePassword() {
+        const field = document.getElementById("password-field");
+        const icon  = document.getElementById("eye-icon");
+        field.type  = field.type === "password" ? "text" : "password";
+        icon.className = field.type === "password" ? "bi bi-eye" : "bi bi-eye-slash";
+      }
+
+      // ── Face Modal ──
+
+      function openFaceModal() {
+        const role = document.getElementById("role-input").value;
+        if (role === "admin") {
+          alert("Face Login is not available for Admin accounts.");
+          return;
+        }
+        document.getElementById("faceModalOverlay").classList.add("active");
+        startWebcamPreview();
+      }
+
+      function closeFaceModal() {
+        document.getElementById("faceModalOverlay").classList.remove("active");
+        stopWebcamPreview();
+        resetFaceUI();
+      }
+
+      function startWebcamPreview() {
+        const video = document.getElementById("face-video-preview");
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+              webcamStream = stream;
+              video.srcObject = stream;
+              video.style.display = "block";
+            })
+            .catch(() => {
+              setFaceStatus("⚠️ Webcam access denied. Face scan will still run on the server.", "warning");
+            });
+        }
+      }
+
+      function stopWebcamPreview() {
+        if (webcamStream) {
+          webcamStream.getTracks().forEach(t => t.stop());
+          webcamStream = null;
+        }
+        const video = document.getElementById("face-video-preview");
+        video.srcObject = null;
+        video.style.display = "none";
+      }
+
+      function setFaceStatus(msg, type = "muted") {
+        const el = document.getElementById("face-status-msg");
+        el.textContent = msg;
+        el.className = "text-" + type;
+      }
+
+      function resetFaceUI() {
+        setFaceStatus("Ready to scan", "muted");
+        document.getElementById("scan-animation").style.display = "none";
+        document.getElementById("btn-scan-face").disabled = false;
+        document.getElementById("btn-scan-face").innerHTML = '<i class="bi bi-camera-fill me-1"></i> Scan Face';
+      }
+
+      async function startFaceScan() {
+        const role = document.getElementById("role-input").value;
+        const btn  = document.getElementById("btn-scan-face");
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Scanning...';
+        document.getElementById("scan-animation").style.display = "block";
+        setFaceStatus("🔍 Scanning your face via server camera... please stay still.", "primary");
+
+        // Get CSRF token
+        const csrfToken = document.cookie.split(';')
+          .find(c => c.trim().startsWith('csrftoken='))
+          ?.split('=')[1] || '';
+
+        const formData = new FormData();
+        formData.append('role', role);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        try {
+          const response = await fetch("{% url 'accounts:face_login' %}", {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': csrfToken }
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            setFaceStatus("✅ " + data.message, "success");
+            document.getElementById("scan-animation").style.display = "none";
+            setTimeout(() => {
+              stopWebcamPreview();
+              window.location.href = data.redirect_url;
+            }, 1000);
+          } else {
+            setFaceStatus("❌ " + data.message, "danger");
+            document.getElementById("scan-animation").style.display = "none";
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-camera-fill me-1"></i> Try Again';
+          }
+        } catch (err) {
+          setFaceStatus("❌ Network error. Please try again.", "danger");
+          document.getElementById("scan-animation").style.display = "none";
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-camera-fill me-1"></i> Try Again';
+        }
+      }
+
+      // Close modal on overlay click
+      document.getElementById("faceModalOverlay").addEventListener("click", function(e) {
+        if (e.target === this) closeFaceModal();
+      });
+    </script>
+  </body>
+</html>

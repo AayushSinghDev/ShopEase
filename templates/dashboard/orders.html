@@ -1,0 +1,75 @@
+{% extends 'dashboard/base_admin.html' %}
+
+{% block title %}Orders{% endblock %}
+{% block page_title %}📋 Manage Orders{% endblock %}
+{% block nav_orders %}active{% endblock %}
+
+{% block content %}
+<!-- Status Filter Tabs -->
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  <a href="/superadmin/orders/"
+     class="btn btn-sm {% if not status_filter %}btn-dark{% else %}btn-outline-secondary{% endif %}"
+     style="border-radius:8px;">All Orders</a>
+  {% for s in status_choices %}
+  <a href="/superadmin/orders/?status={{ s }}"
+     class="btn btn-sm {% if status_filter == s %}btn-dark{% else %}btn-outline-secondary{% endif %}"
+     style="border-radius:8px;text-transform:capitalize;">{{ s }}</a>
+  {% endfor %}
+</div>
+
+<div class="card-admin">
+  <div class="card-header-admin">
+    <h5><i class="bi bi-receipt me-2 text-warning"></i>
+      {% if status_filter %}{{ status_filter|title }} Orders{% else %}All Orders{% endif %}
+      <span class="badge bg-secondary ms-1">{{ orders|length }}</span>
+    </h5>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-admin table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Update Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td><strong>#{{ order.pk }}</strong></td>
+          <td>{{ order.customer.name }}</td>
+          <td>{% for item in order.items.all %}{{ item.product_name|truncatechars:20 }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+          <td>{{ order.quantity }}</td>
+          <td><strong>₹{{ order.total }}</strong></td>
+          <td><span class="status-badge badge-{{ order.status }}">{{ order.status }}</span></td>
+          <td><span style="font-size:0.8rem;color:#888;">{{ order.created_at|date:"d M Y" }}</span></td>
+          <td>
+            <form method="POST" action="/superadmin/orders/update/{{ order.pk }}/" class="d-flex gap-1">
+              {% csrf_token %}
+              <select name="new_status" class="form-select form-select-sm"
+                      style="border-radius:7px;font-size:0.78rem;border:2px solid #e0e7ff;width:130px;">
+                {% for s in status_choices %}
+                <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s|title }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn-orange" style="padding:4px 12px;font-size:0.78rem;border-radius:7px;white-space:nowrap;">
+                Update
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-5">
+          <i class="bi bi-receipt fs-1 d-block mb-2"></i>No orders found.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

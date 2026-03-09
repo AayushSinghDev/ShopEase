@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — ShopEase{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root { --navy:#0d1b3e; --navy2:#162447; --orange:#f5a623; }
+  .checkout-hero { background:linear-gradient(135deg,var(--navy),var(--navy2)); padding:40px 0; color:#fff; }
+  .checkout-hero h1 { font-weight:800; }
+  .c-card { background:#fff; border-radius:16px; padding:26px 28px; margin-bottom:20px; box-shadow:0 4px 18px rgba(0,0,0,.07); }
+  .c-card h5 { font-weight:800; color:var(--navy); margin-bottom:18px; font-size:1rem; }
+
+  /* Address radio */
+  .addr-radio { display:none; }
+  .addr-label {
+    border:2px solid #e0e7ff; border-radius:12px; padding:14px 16px 12px;
+    cursor:pointer; transition:.2s; display:block; margin-bottom:10px; font-size:.875rem;
+    position:relative;
+  }
+  .addr-radio:checked + .addr-label { border-color:var(--orange); background:#fffbf0; }
+  .addr-label .check-dot {
+    width:18px; height:18px; border:2px solid #c0cce0; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-right:8px; flex-shrink:0; vertical-align:middle; transition:.2s;
+  }
+  .addr-radio:checked + .addr-label .check-dot { border-color:var(--orange); background:var(--orange); }
+  .addr-label .del-btn {
+    position:absolute; top:10px; right:10px;
+    background:none; border:none; color:#dc3545; cursor:pointer; font-size:.78rem; padding:2px 6px;
+    border-radius:6px; transition:.2s;
+  }
+  .addr-label .del-btn:hover { background:#f8d7da; }
+
+  /* Collapsible add address */
+  .add-addr-toggle { background:none; border:none; color:var(--orange); font-weight:700; font-size:.875rem; padding:0; cursor:pointer; }
+  .add-addr-toggle:hover { text-decoration:underline; }
+  .add-addr-form { display:none; background:#f8faff; border-radius:12px; padding:18px; margin-top:14px; }
+  .add-addr-form .form-control { border:2px solid #e0e7ff; border-radius:8px; font-size:.875rem; }
+  .add-addr-form .form-control:focus { border-color:var(--orange); box-shadow:0 0 0 3px rgba(245,166,35,.15); }
+
+  /* Payment radios */
+  .pay-radio { display:none; }
+  .pay-label {
+    border:2px solid #e0e7ff; border-radius:12px; padding:16px 20px;
+    cursor:pointer; transition:.2s; display:flex; align-items:center; gap:14px;
+    margin-bottom:10px; font-weight:600; color:#333; font-size:.9rem;
+  }
+  .pay-radio:checked + .pay-label { border-color:var(--orange); background:#fffbf0; color:var(--navy); }
+  .pay-label .pay-icon { font-size:1.7rem; }
+
+  /* Summary */
+  .summary-line { display:flex; justify-content:space-between; padding:7px 0; font-size:.88rem; }
+  .summary-line.total { border-top:2px solid #f0f0f0; padding-top:14px; margin-top:6px; font-size:1.1rem; font-weight:900; color:var(--navy); }
+  .summary-line.discount { color:#155724; font-weight:700; }
+  .summary-line.free { color:#155724; }
+  .disc-badge { background:#d4edda; color:#155724; border-radius:20px; padding:2px 10px; font-size:.72rem; font-weight:700; }
+  .item-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:.85rem; }
+  .item-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; background:#f0f4ff; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .item-thumb img { width:100%; height:100%; object-fit:cover; }
+  .btn-place {
+    background:var(--orange); border:none; color:var(--navy); font-weight:800;
+    padding:14px; border-radius:12px; font-size:1rem; width:100%;
+    transition:.25s; letter-spacing:.5px; margin-top:18px;
+  }
+  .btn-place:hover { background:#e09415; transform:translateY(-1px); box-shadow:0 6px 20px rgba(245,166,35,.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-hero">
+  <div class="container">
+    <h1><i class="bi bi-bag-check-fill me-2"></i>Checkout</h1>
+    <p class="mb-0 opacity-75">Complete your order below</p>
+  </div>
+</div>
+
+<div class="container py-4">
+  {% if messages %}{% for m in messages %}
+  <div class="alert alert-{{ m.tags }} alert-dismissible fade show mb-3">
+    {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>{% endfor %}{% endif %}
+
+  <div class="row g-4">
+
+    <!-- LEFT: Address + Payment -->
+    <div class="col-lg-8">
+
+      <!-- Delivery Address -->
+      <div class="c-card">
+        <h5><i class="bi bi-geo-alt-fill text-warning me-2"></i>Delivery Address</h5>
+
+        {% if addresses %}
+          {% for addr in addresses %}
+          <input type="radio" name="address_id" id="addr{{ addr.pk }}"
+                 value="{{ addr.pk }}" class="addr-radio"
+                 {% if forloop.first %}checked{% endif %} />
+          <label for="addr{{ addr.pk }}" class="addr-label">
+            <span class="check-dot"></span>
+            <strong>{{ addr.full_name }}</strong>
+            {% if addr.is_default %}<span class="disc-badge ms-1">Default</span>{% endif %}<br/>
+            <span style="margin-left:26px;color:#555;">
+              {{ addr.house }}, {{ addr.city }}, {{ addr.state }} — {{ addr.pincode }}<br/>
+              {{ addr.country }} &nbsp;·&nbsp; 📞 {{ addr.phone }}
+            </span>
+            <form method="POST" action="/orders/address/delete/{{ addr.pk }}/"
+                  class="d-inline" onsubmit="return confirm('Remove this address?')">
+              {% csrf_token %}
+              <button type="submit" class="del-btn"><i class="bi bi-trash3"></i></button>
+            </form>
+          </label>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted" style="font-size:.875rem;">No saved addresses. Add one below.</p>
+        {% endif %}
+
+        <button class="add-addr-toggle mt-1" onclick="toggleAddrForm()">
+          <i class="bi bi-plus-circle me-1"></i>Add New Address
+        </button>
+
+        <div class="add-addr-form" id="addrForm">
+          <form method="POST" action="/orders/address/add/">
+            {% csrf_token %}
+            <div class="row g-2">
+              <div class="col-md-6">
+                <input type="text" name="full_name" class="form-control" placeholder="Full Name" required />
+              </div>
+              <div class="col-md-6">
+                <input type="tel" name="phone" class="form-control" placeholder="Phone Number" required />
+              </div>
+              <div class="col-12">
+                <input type="text" name="house" class="form-control" placeholder="House / Flat / Street" required />
+              </div>
+              <div class="col-md-6">
+                <input type="text" name="city" class="form-control" placeholder="City" required />
+              </div>
+              <div class="col-md-6">
+                <input type="text" name="state" class="form-control" placeholder="State" required />
+              </div>
+              <div class="col-md-6">
+                <input type="text" name="pincode" class="form-control" placeholder="Pincode" required />
+              </div>
+              <div class="col-md-6">
+                <input type="text" name="country" class="form-control" placeholder="Country" value="India" required />
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-warning btn-sm fw-bold px-4" style="border-radius:8px;">
+                  <i class="bi bi-plus me-1"></i>Save Address
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="c-card">
+        <h5><i class="bi bi-credit-card-fill text-warning me-2"></i>Payment Method</h5>
+        <input type="radio" name="payment_method" id="payCod" value="cod" class="pay-radio" checked />
+        <label for="payCod" class="pay-label">
+          <span class="pay-icon">💵</span>
+          <div>
+            <div>Cash on Delivery</div>
+            <small style="color:#888;font-weight:400;">Pay when your order arrives</small>
+          </div>
+        </label>
+
+        <input type="radio" name="payment_method" id="payOnline" value="online" class="pay-radio" />
+        <label for="payOnline" class="pay-label">
+          <span class="pay-icon">💳</span>
+          <div>
+            <div>Pay Online — Razorpay</div>
+            <small style="color:#888;font-weight:400;">UPI, Cards, Net Banking · Instant confirmation</small>
+          </div>
+        </label>
+      </div>
+
+      <button class="btn-place" onclick="handlePlaceOrder()">
+        <i class="bi bi-bag-check-fill me-2"></i>Place Order
+      </button>
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <div class="col-lg-4">
+      <div class="c-card" style="position:sticky;top:16px;">
+        <h5><i class="bi bi-receipt text-warning me-2"></i>Order Summary</h5>
+
+        {% for item in cart_items %}
+        <div class="item-row">
+          <div class="item-thumb">
+            {% if item.product.image %}<img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" />
+            {% else %}<i class="bi bi-image text-muted"></i>{% endif %}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:.82rem;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.product.name }}</div>
+            <div style="font-size:.75rem;color:#888;">Qty {{ item.quantity }} × ₹{{ item.product.price }}</div>
+          </div>
+          <div style="font-weight:800;white-space:nowrap;color:var(--navy);">₹{{ item.subtotal }}</div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top:14px;">
+          <div class="summary-line"><span>Subtotal</span><span>₹{{ subtotal }}</span></div>
+          {% if discount_amount > 0 %}
+          <div class="summary-line discount">
+            <span>Discount {% if discount_code %}<span class="disc-badge ms-1">{{ discount_code }}</span>{% endif %}</span>
+            <span>−₹{{ discount_amount }}</span>
+          </div>
+          {% endif %}
+          <div class="summary-line">
+            <span>Tax (5%)</span><span>₹{{ tax }}</span>
+          </div>
+          <div class="summary-line {% if shipping == 0 %}free{% endif %}">
+            <span>Shipping</span>
+            <span>{% if shipping == 0 %}FREE 🎉{% else %}₹{{ shipping }}{% endif %}</span>
+          </div>
+          <div class="summary-line total">
+            <span>Grand Total</span>
+            <span style="color:var(--orange);">₹{{ grand_total }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  const RAZORPAY_KEY = "{{ razorpay_key }}";
+  const CSRF = document.cookie.split(';').find(c=>c.trim().startsWith('csrftoken='))?.split('=')[1]||'';
+
+  function toggleAddrForm() {
+    const f = document.getElementById('addrForm');
+    f.style.display = f.style.display === 'block' ? 'none' : 'block';
+  }
+
+  async function handlePlaceOrder() {
+    const addrSel = document.querySelector('input[name="address_id"]:checked');
+    const paySel  = document.querySelector('input[name="payment_method"]:checked');
+
+    if (!addrSel) { alert('Please select a delivery address.'); return; }
+
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF);
+    fd.append('address_id', addrSel.value);
+    fd.append('payment_method', paySel ? paySel.value : 'cod');
+
+    if (paySel && paySel.value === 'online') {
+      try {
+        const r = await fetch('/orders/place-order/', { method:'POST', body:fd, headers:{'X-CSRFToken':CSRF} });
+        const d = await r.json();
+        if (d.error) { alert('Error: ' + d.error); return; }
+
+        const rzp = new Razorpay({
+          key: d.key_id,
+          amount: d.amount,
+          currency: d.currency,
+          order_id: d.razorpay_order_id,
+          name: 'ShopEase',
+          description: 'Order Payment',
+          theme: { color: '#f5a623' },
+          handler: function(resp) {
+            // POST to callback, expect JSON {success, order_id}
+            const cbFd = new FormData();
+            cbFd.append('csrfmiddlewaretoken', CSRF);
+            cbFd.append('razorpay_payment_id', resp.razorpay_payment_id);
+            cbFd.append('razorpay_order_id',   resp.razorpay_order_id);
+            cbFd.append('razorpay_signature',   resp.razorpay_signature);
+
+            fetch('/orders/razorpay-callback/', { method:'POST', body:cbFd, headers:{'X-CSRFToken':CSRF} })
+              .then(r => r.json())
+              .then(data => {
+                if (data.success) {
+                  window.location.href = '/orders/confirmation/' + data.order_id + '/';
+                } else {
+                  alert('Payment verification failed: ' + data.message);
+                }
+              });
+          },
+          modal: { ondismiss: () => alert('Payment cancelled. Your cart is saved.') }
+        });
+        rzp.open();
+      } catch(e) { alert('Could not initiate payment. Try again.'); }
+    } else {
+      // COD — submit form
+      const form = document.createElement('form');
+      form.method = 'POST'; form.action = '/orders/place-order/';
+      form.innerHTML = `<input name="csrfmiddlewaretoken" value="${CSRF}">
+                        <input name="address_id" value="${addrSel.value}">
+                        <input name="payment_method" value="cod">`;
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+</script>
+{% endblock %}

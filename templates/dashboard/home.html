@@ -1,0 +1,137 @@
+{% extends 'dashboard/base_admin.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}📊 Dashboard Overview{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card" style="background: linear-gradient(135deg,#1e3a8a,#3b82f6)">
+      <p>Total Customers</p>
+      <h3>{{ total_customers }}</h3>
+      <small>Registered buyers</small>
+      <i class="bi bi-people-fill icon-bg"></i>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card" style="background: linear-gradient(135deg,#065f46,#10b981)">
+      <p>Total Sellers</p>
+      <h3>{{ total_sellers }}</h3>
+      <small>{{ pending_sellers }} pending approval</small>
+      <i class="bi bi-shop-window icon-bg"></i>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card" style="background: linear-gradient(135deg,#92400e,#f97316)">
+      <p>Total Products</p>
+      <h3>{{ total_products }}</h3>
+      <small>Listed across all sellers</small>
+      <i class="bi bi-box-seam-fill icon-bg"></i>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card" style="background: linear-gradient(135deg,#581c87,#a855f7)">
+      <p>Total Revenue</p>
+      <h3>₹{{ total_revenue }}</h3>
+      <small>From {{ total_orders }} total orders</small>
+      <i class="bi bi-currency-rupee icon-bg"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Pending Sellers Alert -->
+{% if pending_sellers > 0 %}
+<div class="alert alert-warning alert-custom d-flex align-items-center gap-3 mb-4">
+  <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+  <div>
+    <strong>{{ pending_sellers }} seller(s) awaiting approval.</strong>
+    <a href="/superadmin/sellers/" class="ms-2 fw-bold text-dark text-decoration-none">
+      Review Now →
+    </a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Low Stock Alert -->
+{% if low_stock_count > 0 %}
+<div class="alert alert-danger d-flex align-items-start gap-3 mb-4" style="border-radius:12px;border-left:5px solid #dc3545;">
+  <i class="bi bi-box-seam fs-4 mt-1"></i>
+  <div>
+    <strong>⚠️ {{ low_stock_count }} product(s) critically low on stock!</strong>
+    <div class="mt-2" style="font-size:0.85rem;">
+      {% for p in low_stock_products %}
+        <span class="badge bg-danger me-1 mb-1">{{ p.name }} ({{ p.seller.name }}) — {{ p.stock }} left</span>
+      {% endfor %}
+    </div>
+    <a href="/superadmin/products/" class="btn btn-sm btn-danger mt-2 fw-bold">
+      <i class="bi bi-arrow-right-circle me-1"></i>View All Products
+    </a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Recent Orders -->
+<div class="card-admin">
+  <div class="card-header-admin">
+    <h5><i class="bi bi-receipt me-2 text-warning"></i>Recent Orders</h5>
+    <a href="/superadmin/orders/" class="btn-navy" style="text-decoration:none;display:inline-block;padding:6px 16px;border-radius:7px;color:#fff;font-size:0.82rem;font-weight:600;">
+      View All
+    </a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-admin table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in recent_orders %}
+        <tr>
+          <td><strong>#{{ order.pk }}</strong></td>
+          <td>{{ order.customer.name }}</td>
+          <td>{% for item in order.items.all %}{{ item.product_name|truncatechars:20 }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+          <td>{{ order.quantity }}</td>
+          <td><strong>₹{{ order.total }}</strong></td>
+          <td>
+            <span class="status-badge badge-{{ order.status }}">{{ order.status }}</span>
+          </td>
+          <td>{{ order.created_at|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No orders yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3 mt-3">
+  <div class="col-12">
+    <div class="card-admin p-3 d-flex flex-wrap gap-2">
+      <a href="/superadmin/sellers/" class="btn-orange text-decoration-none" style="padding:8px 18px;border-radius:8px;color:#fff;font-size:0.85rem;font-weight:600;display:inline-block;">
+        <i class="bi bi-check-circle me-1"></i> Approve Sellers
+      </a>
+      <a href="/superadmin/products/" class="btn-navy text-decoration-none" style="padding:8px 18px;border-radius:8px;color:#fff;font-size:0.85rem;font-weight:600;display:inline-block;">
+        <i class="bi bi-box me-1"></i> Manage Products
+      </a>
+      <a href="/superadmin/analytics/" class="btn-navy text-decoration-none" style="padding:8px 18px;border-radius:8px;color:#fff;font-size:0.85rem;font-weight:600;display:inline-block;background:#581c87;">
+        <i class="bi bi-bar-chart me-1"></i> View Analytics
+      </a>
+      <a href="/superadmin/banners/" class="btn-navy text-decoration-none" style="padding:8px 18px;border-radius:8px;color:#fff;font-size:0.85rem;font-weight:600;display:inline-block;background:#065f46;">
+        <i class="bi bi-image me-1"></i> Manage Banners
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}My Orders — ShopEase{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root { --navy:#0d1b3e; --orange:#f5a623; }
+  .ol-hero { background:linear-gradient(135deg,var(--navy),#162447); padding:40px 0; color:#fff; }
+  .ol-hero h1 { font-weight:800; }
+  .order-card { background:#fff; border-radius:16px; padding:20px 24px; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.06); border-left:4px solid transparent; transition:.2s; }
+  .order-card:hover { box-shadow:0 8px 28px rgba(0,0,0,.1); transform:translateY(-2px); }
+  .order-card.pending    { border-left-color:#f5a623; }
+  .order-card.confirmed  { border-left-color:#0d6efd; }
+  .order-card.shipped    { border-left-color:#6f42c1; }
+  .order-card.delivered  { border-left-color:#198754; }
+  .order-card.cancelled  { border-left-color:#dc3545; }
+  .s-badge { padding:4px 12px; border-radius:20px; font-size:.73rem; font-weight:700; text-transform:capitalize; }
+  .s-pending    { background:#fff3cd; color:#856404; }
+  .s-confirmed  { background:#cff4fc; color:#0c5460; }
+  .s-shipped    { background:#e7d7ff; color:#4a0d96; }
+  .s-delivered  { background:#d4edda; color:#155724; }
+  .s-cancelled  { background:#f8d7da; color:#721c24; }
+  .item-pill { background:#f8faff; border-radius:8px; padding:3px 10px; font-size:.78rem; color:#333; font-weight:600; display:inline-block; margin:2px 2px 2px 0; }
+  .btn-view { background:var(--navy); color:var(--orange); border:none; padding:7px 18px; border-radius:8px; font-weight:700; font-size:.82rem; text-decoration:none; display:inline-block; }
+  .btn-view:hover { background:#162447; color:var(--orange); }
+  .empty-wrap { text-align:center; padding:70px 20px; }
+  .empty-wrap i { font-size:5rem; color:#c0cce0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ol-hero">
+  <div class="container">
+    <h1><i class="bi bi-receipt me-2"></i>My Orders</h1>
+    <p class="mb-0 opacity-75">Track all your ShopEase orders in one place</p>
+  </div>
+</div>
+
+<div class="container py-4" style="max-width:860px;">
+  {% if messages %}{% for m in messages %}
+  <div class="alert alert-{{ m.tags }} alert-dismissible fade show mb-3">
+    {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>{% endfor %}{% endif %}
+
+  {% if orders %}
+    {% for order in orders %}
+    <div class="order-card {{ order.status }}">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <div style="font-size:.72rem;color:#888;"><i class="bi bi-calendar3 me-1"></i>{{ order.created_at|date:"d M Y, H:i" }}</div>
+          <div style="font-weight:900;color:var(--navy);font-size:1.05rem;margin:4px 0 8px;">
+            Order <span style="color:var(--orange);">#{{ order.pk }}</span>
+          </div>
+          <div>
+            {% for item in order.items.all %}
+            <span class="item-pill">{{ item.product_name|truncatechars:22 }} ×{{ item.quantity }}</span>
+            {% endfor %}
+          </div>
+          <div style="font-size:.78rem;color:#888;margin-top:8px;">
+            {% if order.payment_method == 'cod' %}💵 COD{% else %}💳 Online{% endif %}
+            &nbsp;·&nbsp; {{ order.items.count }} item{{ order.items.count|pluralize }}
+          </div>
+        </div>
+        <div class="text-end" style="flex-shrink:0;">
+          <div class="mb-2"><span class="s-badge s-{{ order.status }}">{{ order.get_status_display }}</span></div>
+          <div style="font-size:1.25rem;font-weight:900;color:var(--navy);">₹{{ order.total }}</div>
+          <div class="mt-2">
+            <a href="/orders/detail/{{ order.pk }}/" class="btn-view">Details →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-wrap">
+      <i class="bi bi-receipt d-block mb-3"></i>
+      <h4 style="font-weight:800;color:var(--navy);">No orders yet!</h4>
+      <p style="color:#888;">You haven't placed any orders. Start shopping and your orders will appear here.</p>
+      <a href="/products/shop/" style="background:var(--orange);color:var(--navy);font-weight:700;padding:12px 28px;border-radius:10px;text-decoration:none;display:inline-block;margin-top:8px;">
+        <i class="bi bi-bag-fill me-2"></i>Start Shopping
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
