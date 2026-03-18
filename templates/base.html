@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}ShopEase{% endblock %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy: #0d1b3e;
+        --navy-light: #162447;
+        --orange: #f5a623;
+        --orange-hover: #e09415;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f8f9fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── NAVBAR ── */
+      .navbar-shopease {
+        background: var(--navy);
+        padding: 12px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .navbar-brand-custom {
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: var(--orange) !important;
+        text-decoration: none;
+        letter-spacing: 1px;
+      }
+
+      .navbar-brand-custom span {
+        color: #fff;
+      }
+
+      .search-bar {
+        flex: 1;
+        max-width: 480px;
+        margin: 0 20px;
+      }
+
+      .search-bar .form-control {
+        border: none;
+        border-radius: 8px 0 0 8px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
+
+      .search-bar .btn-search {
+        background: var(--orange);
+        border: none;
+        border-radius: 0 8px 8px 0;
+        padding: 10px 18px;
+        color: var(--navy);
+        font-weight: 700;
+      }
+
+      .search-bar .btn-search:hover {
+        background: var(--orange-hover);
+      }
+
+      .nav-icons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .cart-btn {
+        background: var(--orange);
+        color: var(--navy) !important;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+
+      .cart-btn:hover {
+        background: var(--orange-hover);
+        transform: translateY(-1px);
+      }
+
+      .cart-count {
+        background: #fff;
+        color: var(--navy);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 900;
+      }
+
+      .btn-nav-login {
+        background: transparent;
+        border: 2px solid var(--orange);
+        color: var(--orange) !important;
+        border-radius: 8px;
+        padding: 7px 16px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+
+      .btn-nav-login:hover {
+        background: var(--orange);
+        color: var(--navy) !important;
+      }
+
+      .btn-nav-logout {
+        background: transparent;
+        border: 2px solid #dc3545;
+        color: #ff6b6b !important;
+        border-radius: 8px;
+        padding: 7px 16px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+
+      .btn-nav-logout:hover {
+        background: #dc3545;
+        color: #fff !important;
+      }
+
+      .user-greeting {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.85rem;
+      }
+
+      /* ── FOOTER ── */
+      .footer {
+        background: var(--navy);
+        color: rgba(255, 255, 255, 0.8);
+        padding: 50px 0 20px;
+        margin-top: auto;
+      }
+
+      .footer h5 {
+        color: var(--orange);
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      .footer a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+      }
+
+      .footer a:hover {
+        color: var(--orange);
+      }
+
+      .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 30px;
+        padding-top: 20px;
+        text-align: center;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .footer-brand {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--orange);
+      }
+
+      /* ── MESSAGES ── */
+      .messages-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+        width: 320px;
+      }
+
+      .alert {
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      }
+
+      /* ── MAIN CONTENT ── */
+      main {
+        flex: 1;
+      }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar-shopease">
+      <div class="container">
+        <div class="d-flex align-items-center w-100">
+          <!-- Logo -->
+          <a href="/" class="navbar-brand-custom me-3">
+            <i class="bi bi-bag-heart-fill"></i> Shop<span>Ease</span>
+          </a>
+
+          <!-- Search Bar -->
+          <form class="search-bar d-flex" action="/products/" method="GET">
+            <input
+              type="text"
+              name="search"
+              class="form-control"
+              placeholder="Search products..."
+              value="{{ request.GET.search }}"
+            />
+            <button type="submit" class="btn-search">
+              <i class="bi bi-search"></i>
+            </button>
+          </form>
+
+          <!-- Nav Icons -->
+          <div class="nav-icons ms-auto">
+            <!-- Cart -->
+            <a href="/cart/" class="cart-btn">
+              <i class="bi bi-cart3"></i>
+              Cart
+              <span class="cart-count"
+                >{{ request.session.cart|length|default:0 }}</span
+              >
+            </a>
+
+            <!-- Login/Logout -->
+            {% if request.session.user_id %}
+            <span class="user-greeting">
+              <i class="bi bi-person-circle"></i>
+              {{ request.session.user_name }}
+            </span>
+            <a href="/accounts/logout/" class="btn-nav-logout">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+            {% else %}
+            <a href="/accounts/login/" class="btn-nav-login">
+              <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MESSAGES -->
+    <div class="messages-container">
+      {% for message in messages %}
+      <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main>{% block content %}{% endblock %}</main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <div class="footer-brand">
+              <i class="bi bi-bag-heart-fill"></i> ShopEase
+            </div>
+            <p class="mt-3 text-white-50" style="font-size: 0.9rem">
+              Your one-stop e-commerce destination. Quality products, great
+              prices, fast delivery.
+            </p>
+          </div>
+          <div class="col-md-2 mb-4">
+            <h5>Shop</h5>
+            <a href="/products/">All Products</a>
+            <a href="/">Categories</a>
+            <a href="/products/?featured=true">Featured</a>
+          </div>
+          <div class="col-md-2 mb-4">
+            <h5>Account</h5>
+            <a href="/accounts/login/">Login</a>
+            <a href="/accounts/register/">Register</a>
+            <a href="/orders/">My Orders</a>
+          </div>
+          <div class="col-md-4 mb-4">
+            <h5>Contact</h5>
+            <p style="font-size: 0.9rem">
+              <i class="bi bi-envelope me-2"></i>support@shopease.com<br />
+              <i class="bi bi-telephone me-2"></i>+91 98765 43210<br />
+              <i class="bi bi-geo-alt me-2"></i>India
+            </p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          © 2026 ShopEase. All rights reserved. Built with ❤️ using Django.
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
